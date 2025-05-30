@@ -1,7 +1,3 @@
-<script setup>
-import '@fontsource/poppins';
-</script>
-
 <template>
   <div class="bg-image">
     <div class="content-wrapper">
@@ -31,18 +27,30 @@ import '@fontsource/poppins';
         >Enter</v-btn>
       </v-card>
       <v-btn
+        @click="routeToCreateWishList"
         class="mx-auto d-block mt-10 font-weight-bold"
         color="#e46842"
-        height="50"
+        height="55"
         width="370"
       >Create your own Wishlist</v-btn>
     </div>
   </div>
 </template>
 
+<script setup>
+import '@fontsource/poppins';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+function routeToCreateWishList() {
+  router.push('/create');
+}
+</script>
+
 <style scoped>
 .bg-image {
-  background-image: url('src/assets/images/background.png');
+  background-image: url('../assets/images/background.png');
   background-size: cover;
   min-height: 100vh;
   width: 100%;
