@@ -27,12 +27,15 @@
         >Enter</v-btn>
       </v-card>
       <v-btn
-        @click="routeToCreateWishList"
+        @click="showWishListDialog = true"
         class="mx-auto d-block mt-10 font-weight-bold"
         color="#e46842"
         height="55"
         width="370"
       >Create your own Wishlist</v-btn>
+      <CreateWishListDialog
+        v-model="showWishListDialog"
+      />
     </div>
   </div>
 </template>
@@ -40,8 +43,11 @@
 <script setup>
 import '@fontsource/poppins';
 import { useRouter } from 'vue-router';
+import {ref} from "vue";
+import CreateWishListDialog from "@/components/CreateWishListDialog.vue";
 
 const router = useRouter();
+const showWishListDialog = ref(false);
 
 function routeToCreateWishList() {
   router.push('/create');

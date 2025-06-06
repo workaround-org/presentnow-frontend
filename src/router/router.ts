@@ -5,7 +5,7 @@ import CreateWishList from "@/components/CreateWishList.vue";
 
 const routes = [
     { path: '/', component: Startpage },
-    { path: '/create', component: CreateWishList }
+    { path: '/create/:wishListName', component: CreateWishList, props: true }
 ]
 
 const router = createRouter({
