@@ -27,3 +27,31 @@ pnpm dev
 ```sh
 pnpm build
 ```
+
+## Docker
+
+This project includes a Dockerfile for containerized deployment.
+
+### Build Docker Image Locally
+
+```sh
+docker build -t presentnow-frontend .
+```
+
+### Run Docker Container
+
+```sh
+docker run -p 8080:80 presentnow-frontend
+```
+
+The application will be available at http://localhost:8080.
+
+### GitHub Actions
+
+The Docker image is automatically built and pushed to GitHub Container Registry on every push to the `main` branch via the [build-and-push workflow](.github/workflows/build-and-push.yml).
+
+To pull and run the latest image from GitHub Container Registry:
+
+```sh
+docker run -p 8080:80 ghcr.io/workaround-org/presentnow-frontend:latest
+```
