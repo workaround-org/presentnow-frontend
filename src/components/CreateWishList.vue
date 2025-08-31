@@ -16,7 +16,8 @@
       <v-card class="mx-auto mb-10" width="1000">
         <v-card-title class="text-center text-h4 mb-2 font-weight-bold">Set deadline</v-card-title>
         <v-date-input class="mx-auto text-center" max-width="600" label="Select a date" prepend-icon=""
-          prepend-inner-icon="$calendar" variant="solo"></v-date-input>
+          prepend-inner-icon="$calendar" variant="solo" v-model="deadline"></v-date-input>
+        <!--Update is not implemented yet-->
       </v-card>
       <v-card class="mx-auto" width="1000">
         <v-card-title class="text-center text-h4 mb-2 font-weight-bold">Wishes</v-card-title>
@@ -50,6 +51,7 @@ const router = useRouter()
 const wishes = ref([]);
 const publicLink = ref("https://presentnow.com/wishlist/1234");
 const loading = ref(false);
+const deadline = ref(null);
 
 const props = defineProps({
   wishListName: String
@@ -86,6 +88,9 @@ onMounted(async () => {
           wishes.value = list.presentIdeas.map(p => ({ ...p, listId: p.listId ?? list.id }))
         }
         publicLink.value = `${window.location.origin}/wishlist/${list.id ?? listIdParam}`
+        if (list.expires) {
+          deadline.value = new Date(list.expires)
+        }
       }
     }
   } catch (e) {
