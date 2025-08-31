@@ -1,7 +1,7 @@
 <template>
   <div class="bg-image">
-    <div class="position-absolute mt-n10">
-      <v-img class="mb-n1 ml-5" :width="100" src="src/assets/images/presentnow-icon.png"></v-img>
+    <div class="position-absolute mt-n10" @click="toHome" style="cursor: pointer;">
+      <v-img class="mb-n1 ml-5" :width="100" :src="presentNowIcon"></v-img>
       <h3 :style="{ color: '#e46842' }" class="ml-4">presentnow</h3>
     </div>
     <div :style="{ color: '#e46842' }" class="text-center mb-3 mt-10 text-h3 font-weight-bold"> {{ displayedName }}
@@ -40,10 +40,12 @@ import Wish from "@/components/Wish.vue";
 import { ref, onMounted } from "vue";
 import WishListCode from "@/components/WishListCode.vue";
 import { VDateInput } from 'vuetify/labs/VDateInput'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { getWishList } from '@/api/client.js'
+import presentNowIcon from '@/assets/images/presentnow-icon.png'
 
 const route = useRoute()
+const router = useRouter()
 
 const wishes = ref([]);
 const publicLink = ref("https://presentnow.com/wishlist/1234");
@@ -65,6 +67,10 @@ function copyToClipboard() {
   }).catch(err => {
     console.error("Failed to copy: ", err);
   });
+}
+
+function toHome() {
+  router.push('/')
 }
 
 onMounted(async () => {
@@ -92,7 +98,7 @@ onMounted(async () => {
 
 <style scoped>
 .bg-image {
-  background-image: url('src/assets/images/background.png');
+  background-image: url('@/assets/images/background.png');
   background-size: cover;
   min-height: 100vh;
   width: 100%;
