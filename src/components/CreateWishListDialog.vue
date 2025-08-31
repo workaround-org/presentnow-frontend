@@ -24,7 +24,8 @@
             width="370"
             :loading="isSaving"
             :disabled="isSaving"
-        >Create</v-btn>
+        >Create
+        </v-btn>
       </div>
     </v-card>
   </v-dialog>
@@ -33,7 +34,7 @@
 <script setup>
 import {useRouter} from "vue-router";
 import {ref} from "vue";
-import { saveWishList } from '@/api/client.js'
+import {saveWishList} from '@/api/client.js'
 
 const router = useRouter();
 const wishlistName = ref('');

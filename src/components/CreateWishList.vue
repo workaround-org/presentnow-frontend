@@ -6,28 +6,29 @@
     </div>
     <div :style="{ color: '#e46842' }" class="text-center mb-3 mt-10 text-h3 font-weight-bold"> {{ displayedName }}
     </div>
-    <div class="text-center mb-10 text-h6 font-weight-bold">Congrats! Your wishlist is now online 🎉 </div>
+    <div class="text-center mb-10 text-h6 font-weight-bold">Congrats! Your wishlist is now online 🎉</div>
     <div class="d-flex flex-column justify-center">
       <v-card class="mx-auto mb-10" width="1000">
         <WishListCode></WishListCode>
         <v-text-field readonly :value="publicLink" class="mx-auto text-center" max-width="600" variant="outlined"
-          append-inner-icon="mdi-content-copy" @click:append-inner="copyToClipboard"></v-text-field>
+                      append-inner-icon="mdi-content-copy" @click:append-inner="copyToClipboard"></v-text-field>
       </v-card>
       <v-card class="mx-auto mb-10" width="1000">
         <v-card-title class="text-center text-h4 mb-2 font-weight-bold">Set deadline</v-card-title>
         <v-date-input class="mx-auto text-center" max-width="600" label="Select a date" prepend-icon=""
-          prepend-inner-icon="$calendar" variant="solo" v-model="deadline"></v-date-input>
+                      prepend-inner-icon="$calendar" variant="solo" v-model="deadline"></v-date-input>
         <!--Update is not implemented yet-->
       </v-card>
       <v-card class="mx-auto" width="1000">
         <v-card-title class="text-center text-h4 mb-2 font-weight-bold">Wishes</v-card-title>
         <v-btn color="#e46842" class="mx-auto d-block mb-10 font-weight-bold" height="50" width="250"
-          @click="addWish">Add wish</v-btn>
+               @click="addWish">Add wish
+        </v-btn>
         <div v-if="loading" class="text-center mb-6">Loading wishes...</div>
         <div v-else>
           <div v-for="present in wishes" :key="present.id">
             <Wish :name="present.name" :description="present.description" :url="present.url"
-              :importance="present.importance" :id="present.id" :list-id="present.listId" />
+                  :importance="present.importance" :id="present.id" :list-id="present.listId"/>
           </div>
         </div>
       </v-card>
@@ -38,11 +39,11 @@
 <script setup>
 import '@fontsource/poppins';
 import Wish from "@/components/Wish.vue";
-import { ref, onMounted } from "vue";
+import {onMounted, ref} from "vue";
 import WishListCode from "@/components/WishListCode.vue";
-import { VDateInput } from 'vuetify/labs/VDateInput'
-import { useRoute, useRouter } from 'vue-router'
-import { getWishList } from '@/api/client.js'
+import {VDateInput} from 'vuetify/labs/VDateInput'
+import {useRoute, useRouter} from 'vue-router'
+import {getWishList} from '@/api/client.js'
 import presentNowIcon from '@/assets/images/presentnow-icon.png'
 
 const route = useRoute()
@@ -60,7 +61,14 @@ const props = defineProps({
 const displayedName = ref(props.wishListName)
 
 function addWish() {
-  wishes.value.push({ id: Date.now(), name: '', description: '', url: '', importance: 0, listId: route.params.wishListName });
+  wishes.value.push({
+    id: Date.now(),
+    name: '',
+    description: '',
+    url: '',
+    importance: 0,
+    listId: route.params.wishListName
+  });
 }
 
 function copyToClipboard() {
@@ -85,7 +93,7 @@ onMounted(async () => {
         displayedName.value = list.name || displayedName.value
         if (Array.isArray(list.presentIdeas)) {
           // Ensure each present has listId for Wish component consumption
-          wishes.value = list.presentIdeas.map(p => ({ ...p, listId: p.listId ?? list.id }))
+          wishes.value = list.presentIdeas.map(p => ({...p, listId: p.listId ?? list.id}))
         }
         publicLink.value = `${window.location.origin}/wishlist/${list.id ?? listIdParam}`
         if (list.expires) {
