@@ -4,7 +4,7 @@
 <template>
   <v-app>
     <main>
-      <RouterView />
+      <RouterView/>
     </main>
   </v-app>
 </template>
