@@ -8,33 +8,35 @@
       ></v-img>
       <h1 :style="{ color: '#e46842' }" class="text-center">presentnow</h1>
       <v-card
-        class="mx-auto pa-4 mt-10"
-        max-width="400"
+          class="mx-auto pa-4 mt-10"
+          max-width="400"
       >
         <v-number-input
-          control-variant="hidden"
-          class="mx-auto text-center"
-          max-width="370"
-          height="100"
-          placeholder="Wishlist PIN"
-          variant="outlined"
+            control-variant="hidden"
+            class="mx-auto text-center"
+            max-width="370"
+            height="100"
+            placeholder="Wishlist PIN"
+            variant="outlined"
         ></v-number-input>
         <v-btn
-          class="mt-n3 font-weight-bold"
-          color="#333333"
-          height="55"
-          width="370"
-        >Enter</v-btn>
+            class="mt-n3 font-weight-bold"
+            color="#333333"
+            height="55"
+            width="370"
+        >Enter
+        </v-btn>
       </v-card>
       <v-btn
-        @click="showWishListDialog = true"
-        class="mx-auto d-block mt-10 font-weight-bold"
-        color="#e46842"
-        height="55"
-        width="370"
-      >Create your own Wishlist</v-btn>
+          @click="showWishListDialog = true"
+          class="mx-auto d-block mt-10 font-weight-bold"
+          color="#e46842"
+          height="55"
+          width="370"
+      >Create your own Wishlist
+      </v-btn>
       <CreateWishListDialog
-        v-model="showWishListDialog"
+          v-model="showWishListDialog"
       />
     </div>
   </div>
@@ -42,7 +44,7 @@
 
 <script setup>
 import '@fontsource/poppins';
-import { useRouter } from 'vue-router';
+import {useRouter} from 'vue-router';
 import {ref} from "vue";
 import CreateWishListDialog from "@/components/CreateWishListDialog.vue";
 
