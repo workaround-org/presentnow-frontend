@@ -12,12 +12,16 @@
     <v-dialog v-model="dialog" style="max-width: 55rem;">
       <v-card>
         <v-card-text>
-          <v-text-field v-model="wish.url" label="Link" placeholder="Enter link here"></v-text-field>
+          <v-text-field
+              v-model="wish.url"
+              variant="outlined"
+              placeholder="Link"></v-text-field>
         </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="blue" @click="saveLink" :loading="isSaving" :disabled="isSaving">Save</v-btn>
-        </v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn color="#e46842"
+               class="mx-auto mb-5 mt-n4 font-weight-bold" height="50" width="250"
+               @click="saveLink" :loading="isSaving" :disabled="isSaving">Save
+        </v-btn>
       </v-card>
     </v-dialog>
   </div>
