@@ -18,6 +18,29 @@ The backend must provide the following configuration via the `/api/present-now/v
 }
 ```
 
+## Production Deployment
+
+### Nginx Configuration
+
+The application includes a custom nginx configuration (`nginx.conf`) that handles SPA routing properly:
+
+- **SPA Routing**: All routes fall back to `index.html` via `try_files`
+- **Static Asset Caching**: 1 year cache for static files (js, css, fonts, images)
+- **Gzip Compression**: Enabled for text-based files
+- **Security Headers**: X-Frame-Options, X-Content-Type-Options, X-XSS-Protection
+- **Health Check**: Available at `/health` endpoint
+
+This configuration ensures that Vue Router routes like `/callback` work correctly in production.
+
+### Docker Build
+
+The Dockerfile now includes the nginx configuration:
+```dockerfile
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+```
+
+When nginx receives a request for `/callback?code=...`, it will serve `index.html`, allowing Vue Router to handle the route client-side.
+
 ## Components
 
 ### AuthService (`src/auth/authService.js`)
