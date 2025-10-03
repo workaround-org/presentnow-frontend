@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Silent Renew</title>
+</head>
+<body>
+    <script type="module">
+        import { UserManager } from 'oidc-client-ts';
+        
+        new UserManager({ response_mode: "query" })
+            .signinSilentCallback()
+            .catch(function (e) {
+                console.error('Silent renew error:', e);
+            });
+    </script>
+</body>
+</html>

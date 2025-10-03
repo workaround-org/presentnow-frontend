@@ -43,7 +43,7 @@ import {onMounted, ref} from "vue";
 import WishListCode from "@/components/WishListCode.vue";
 import {VDateInput} from 'vuetify/labs/VDateInput'
 import {useRoute, useRouter} from 'vue-router'
-import {getWishList} from '@/api/client.js'
+import {getPublicWishList} from '@/api/client.js'
 import presentNowIcon from '@/assets/images/presentnow-icon.png'
 
 const route = useRoute()
@@ -88,7 +88,7 @@ onMounted(async () => {
   try {
     const listIdParam = route.params.wishListName
     if (listIdParam) {
-      const list = await getWishList(listIdParam)
+      const list = await getPublicWishList(listIdParam)
       if (list) {
         displayedName.value = list.name || displayedName.value
         if (Array.isArray(list.presentIdeas)) {

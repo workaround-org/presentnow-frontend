@@ -2,6 +2,8 @@
 // Endpoints based on openapi.yaml
 // Dynamic base URL selection: localhost -> http://localhost:8080, otherwise https://{host}
 
+import authService from '@/auth/authService.js'
+
 const runtimeHost = typeof window !== 'undefined' ? window.location.hostname : 'localhost'
 const runtimeFullHost = typeof window !== 'undefined' ? window.location.host : 'localhost'
 const API_BASE = runtimeHost === 'localhost'
@@ -10,13 +12,21 @@ const API_BASE = runtimeHost === 'localhost'
 
 const ROOT = `${API_BASE}/api/present-now/v1`;
 
-// Helper to build request options
-function jsonOptions(method, body) {
+// Helper to build request options with authentication
+async function jsonOptions(method, body) {
+    const headers = {
+        'Content-Type': 'application/json'
+    }
+    
+    // Add authorization header if user is authenticated
+    const token = await authService.getAccessToken()
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+    }
+    
     return {
         method,
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers,
         body: body !== undefined ? JSON.stringify(body) : undefined
     }
 }
@@ -39,44 +49,63 @@ async function handle(res) {
 // Create or update (save) wish list
 // list: { id?, name, description, username?, active?, presentIdeas?, expires? }
 export async function saveWishList(list) {
-    return handle(await fetch(`${ROOT}/lists`, jsonOptions('POST', list)))
+    return handle(await fetch(`${ROOT}/lists`, await jsonOptions('POST', list)))
 }
 
 // Get all lists for current user
 export async function getWishLists() {
-    return handle(await fetch(`${ROOT}/lists`))
+    return handle(await fetch(`${ROOT}/lists`, await jsonOptions('GET')))
 }
 
-// Get list by id
-export async function getWishList(id) {
-    return handle(await fetch(`${ROOT}/lists/${id}`))
+// Update wish list
+export async function updateWishList(id, wishListUpdate) {
+    return handle(await fetch(`${ROOT}/lists/${id}`, await jsonOptions('PUT', wishListUpdate)))
+}
+
+// Delete wish list
+export async function deleteWishList(id) {
+    await handle(await fetch(`${ROOT}/lists/${id}`, await jsonOptions('DELETE')))
+    return true
 }
 
 // Create present idea for a list (listId required in payload per schema)
 // present: { id?, listId, name, url, description, importance }
 export async function savePresent(present) {
-    return handle(await fetch(`${ROOT}/present`, jsonOptions('POST', present)))
+    return handle(await fetch(`${ROOT}/present`, await jsonOptions('POST', present)))
 }
 
 // Update present idea
 export async function updatePresent(id, present) {
-    return handle(await fetch(`${ROOT}/present/${id}`, jsonOptions('PUT', present)))
+    return handle(await fetch(`${ROOT}/present/${id}`, await jsonOptions('PUT', present)))
 }
 
 // Get present by id
 export async function getPresent(id) {
-    return handle(await fetch(`${ROOT}/present/${id}`))
+    return handle(await fetch(`${ROOT}/present/${id}`, await jsonOptions('GET')))
 }
 
 // Delete present
 export async function deletePresent(id) {
-    await handle(await fetch(`${ROOT}/present/${id}`, {method: 'DELETE'}))
+    await handle(await fetch(`${ROOT}/present/${id}`, await jsonOptions('DELETE')))
     return true
 }
 
 // Convenience helper: create a present for given list id with minimal fields
 export async function createPresentForList(listId, {name, url = '', description = '', importance = 0}) {
     return savePresent({listId, name, url, description, importance})
+}
+
+// Public endpoints (no authentication required)
+export async function getFrontendConfig() {
+    return handle(await fetch(`${ROOT}/public/config`))
+}
+
+export async function getPublicWishList(id) {
+    return handle(await fetch(`${ROOT}/public/lists/${id}`))
+}
+
+export async function getPublicPresent(id) {
+    return handle(await fetch(`${ROOT}/public/present/${id}`))
 }
 
 // Example usage (remove or adapt in components):
