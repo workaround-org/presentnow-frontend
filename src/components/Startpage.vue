@@ -1,6 +1,6 @@
 <template>
   <div class="bg-image">
-    <div class="content-wrapper">
+    <div class="content-wrapper" v-if="!checkingAuth">
       <v-img
           class="mx-auto mb-n6"
           :width="200"
@@ -39,21 +39,47 @@
           v-model="showWishListDialog"
       />
     </div>
+    <div class="content-wrapper" v-else>
+      <v-progress-circular
+          class="mx-auto d-block"
+          indeterminate
+          color="#e46842"
+          size="64"
+      ></v-progress-circular>
+      <p class="text-center mt-4">Checking authentication...</p>
+    </div>
   </div>
 </template>
 
 <script setup>
 import '@fontsource/poppins';
 import {useRouter} from 'vue-router';
-import {ref} from "vue";
+import {ref, onMounted} from "vue";
 import CreateWishListDialog from "@/components/CreateWishListDialog.vue";
+import authService from '@/auth/authService.js';
 
 const router = useRouter();
 const showWishListDialog = ref(false);
+const checkingAuth = ref(true);
 
 function routeToCreateWishList() {
   router.push('/create');
 }
+
+onMounted(async () => {
+  checkingAuth.value = true;
+  try {
+    const isAuthenticated = await authService.isAuthenticated();
+    if (!isAuthenticated) {
+      console.log('User not authenticated, starting login process...');
+      await authService.login();
+    }
+  } catch (error) {
+    console.error('Authentication check failed:', error);
+  } finally {
+    checkingAuth.value = false;
+  }
+});
 </script>
 
 <style scoped>
