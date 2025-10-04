@@ -2,9 +2,9 @@
   <div>
     <v-container class="d-flex">
       <v-text-field class="mx-auto mr-2" variant="outlined" placeholder="Name" width="30"
-                    v-model="wish.name" @blur="autoSave"></v-text-field>
+                    v-model="wish.name" @blur="autoSave" maxlength="255" counter></v-text-field>
       <v-text-field class="mx-auto mr-2" variant="outlined" placeholder="Description" width="200"
-                    v-model="wish.description" @blur="autoSave"></v-text-field>
+                    v-model="wish.description" @blur="autoSave" maxlength="255" counter></v-text-field>
       <v-btn color="blue" rounded="0" icon="mdi-link" class="mx-auto d-block mr-2 mt-1 wish-buttons"
              @click="dialog = true"></v-btn>
       <v-btn color="red" rounded="0" icon="mdi-delete" class="mx-auto d-block mt-1 wish-buttons"
@@ -12,11 +12,16 @@
     </v-container>
     <v-dialog v-model="dialog" style="max-width: 55rem;">
       <v-card>
+        <v-card-title class="text-center">Add Link</v-card-title>
         <v-card-text>
           <v-text-field
               v-model="wish.url"
               variant="outlined"
-              placeholder="Link"></v-text-field>
+              placeholder="Link"
+              maxlength="255"
+              counter
+              :error-messages="urlError"
+              @input="urlError = ''"></v-text-field>
         </v-card-text>
         <v-spacer></v-spacer>
         <v-btn color="#e46842"
@@ -96,8 +101,14 @@ watch(() => props.id, (newId) => {
 const dialog = ref(false)
 const isSaving = ref(false)
 const isDeleting = ref(false)
+const urlError = ref('')
 
 async function saveLink() {
+  // Validate URL length before saving
+  if (wish.value.url && wish.value.url.length > 255) {
+    urlError.value = 'URL is too long (max 255 characters)'
+    return
+  }
   await save()
   dialog.value = false
 }
@@ -106,6 +117,16 @@ async function autoSave() {
   // Only auto-save if the wish has a name (user has entered something meaningful)
   if (!wish.value.name.trim()) {
     return
+  }
+  // Truncate fields that are too long before saving
+  if (wish.value.name.length > 255) {
+    wish.value.name = wish.value.name.substring(0, 255)
+  }
+  if (wish.value.description.length > 255) {
+    wish.value.description = wish.value.description.substring(0, 255)
+  }
+  if (wish.value.url.length > 255) {
+    wish.value.url = wish.value.url.substring(0, 255)
   }
   await save()
 }
@@ -116,11 +137,15 @@ async function save() {
   try {
     const listIdParam = props.listId ?? route.params.wishListName
     const listId = typeof listIdParam === 'string' ? (Number(listIdParam) || listIdParam) : listIdParam
+    
+    // Ensure all fields are within database limits (255 chars)
+    const truncate = (str, maxLength = 255) => str && str.length > maxLength ? str.substring(0, maxLength) : str
+    
     const payload = {
       listId,
-      name: wish.value.name || 'Untitled Present',
-      url: wish.value.url || '',
-      description: wish.value.description || '',
+      name: truncate(wish.value.name, 255) || 'Untitled Present',
+      url: truncate(wish.value.url, 255) || '',
+      description: truncate(wish.value.description, 255) || '',
       importance: wish.value.importance || 0,
     }
     
