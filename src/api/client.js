@@ -32,16 +32,24 @@ async function jsonOptions(method, body) {
 }
 
 async function handle(res) {
+    // Check for 204 No Content first (before trying to read body)
+    if (res.status === 204) return null
+    
     if (!res.ok) {
         let detail
         try {
-            detail = await res.json()
+            const text = await res.text()
+            try {
+                detail = JSON.parse(text)
+            } catch {
+                detail = text
+            }
         } catch (_) {
-            detail = await res.text()
+            detail = 'Unknown error'
         }
-        throw new Error(`HTTP ${res.status} ${res.statusText}: ${detail}`)
+        throw new Error(`HTTP ${res.status} ${res.statusText}: ${JSON.stringify(detail)}`)
     }
-    if (res.status === 204) return null
+    
     const ct = res.headers.get('content-type') || ''
     return ct.includes('application/json') ? res.json() : res.text()
 }
