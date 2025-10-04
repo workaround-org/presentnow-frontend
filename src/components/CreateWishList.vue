@@ -28,7 +28,8 @@
         <div v-else>
           <div v-for="present in wishes" :key="present.id">
             <Wish :name="present.name" :description="present.description" :url="present.url"
-                  :importance="present.importance" :id="present.id" :list-id="present.listId"/>
+                  :importance="present.importance" :id="present.id" :list-id="present.listId"
+                  @deleted="removeWish"/>
           </div>
         </div>
       </v-card>
@@ -69,6 +70,10 @@ function addWish() {
     importance: 0,
     listId: route.params.wishListName
   });
+}
+
+function removeWish(wishId) {
+  wishes.value = wishes.value.filter(w => w.id !== wishId)
 }
 
 function copyToClipboard() {
