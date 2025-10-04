@@ -37,18 +37,40 @@
               <v-col v-for="wish in wishes" :key="wish.id" cols="12" sm="6" md="4">
                 <v-card 
                   class="wish-card" 
-                  :class="{ 'wish-card-clickable': wish.url }"
+                  :class="{ 
+                    'wish-card-clickable': wish.url && !wish.claimed,
+                    'wish-card-claimed': wish.claimed 
+                  }"
                   elevation="3"
-                  @click="openWishLink(wish.url)"
+                  @click="handleWishClick(wish)"
                 >
-                  <v-card-title class="text-h6 font-weight-bold">
-                    {{ wish.name || 'Unnamed Wish' }}
+                  <v-card-title class="text-h6 font-weight-bold d-flex align-center justify-space-between">
+                    <span>{{ wish.name || 'Unnamed Wish' }}</span>
+                    <v-chip v-if="wish.claimed" color="success" size="small" class="ml-2">
+                      <v-icon small left>mdi-check</v-icon>
+                      Claimed
+                    </v-chip>
                   </v-card-title>
                   <v-card-text>
                     <div v-if="wish.description" class="text-body-1 mb-2">
                       {{ wish.description }}
                     </div>
+                    <div v-if="wish.claimed && wish.claimerName" class="text-caption text-grey mt-2">
+                      <v-icon small class="mr-1">mdi-account</v-icon>
+                      Claimed by: {{ wish.claimerName }}
+                    </div>
                   </v-card-text>
+                  <v-card-actions v-if="!wish.claimed">
+                    <v-btn 
+                      color="#e46842" 
+                      variant="text" 
+                      size="small"
+                      @click.stop="openClaimDialog(wish)"
+                    >
+                      <v-icon left small>mdi-hand-heart</v-icon>
+                      I'll gift this
+                    </v-btn>
+                  </v-card-actions>
                 </v-card>
               </v-col>
             </v-row>
@@ -56,6 +78,47 @@
         </v-card>
       </div>
     </div>
+
+    <!-- Claim Dialog -->
+    <v-dialog v-model="claimDialog" max-width="500">
+      <v-card>
+        <v-card-title class="text-center text-h5 font-weight-bold">
+          Claim This Wish
+        </v-card-title>
+        <v-card-text>
+          <div class="text-body-1 mb-4">
+            You're about to claim: <strong>{{ selectedWish?.name }}</strong>
+          </div>
+          <v-text-field
+            v-model="claimerName"
+            variant="outlined"
+            label="Your Name"
+            placeholder="Enter your name"
+            maxlength="100"
+            :error-messages="claimError"
+            @input="claimError = ''"
+          ></v-text-field>
+        </v-card-text>
+        <v-card-actions class="justify-center pb-4">
+          <v-btn 
+            color="grey" 
+            variant="text"
+            @click="closeClaimDialog"
+          >
+            Cancel
+          </v-btn>
+          <v-btn 
+            color="#e46842" 
+            variant="elevated"
+            :loading="claiming"
+            :disabled="claiming || !claimerName.trim()"
+            @click="claimWish"
+          >
+            Claim
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -63,7 +126,7 @@
 import '@fontsource/poppins';
 import { onMounted, ref, computed } from "vue";
 import { useRoute, useRouter } from 'vue-router';
-import { getPublicWishList } from '@/api/client.js';
+import { getPublicWishList, updatePresent } from '@/api/client.js';
 import presentNowIcon from '@/assets/images/presentnow-icon.png';
 
 const route = useRoute();
@@ -74,6 +137,16 @@ const deadline = ref(null);
 const wishes = ref([]);
 const loading = ref(true);
 const error = ref(null);
+
+// Claim dialog state
+const claimDialog = ref(false);
+const selectedWish = ref(null);
+const claimerName = ref('');
+const claiming = ref(false);
+const claimError = ref('');
+
+// Session storage key for claimer name
+const CLAIMER_NAME_KEY = 'presentnow_claimer_name';
 
 function toHome() {
   router.push('/');
@@ -111,9 +184,82 @@ const timeRemaining = computed(() => {
   }
 });
 
+function handleWishClick(wish) {
+  // If wish is claimed, do nothing
+  if (wish.claimed) {
+    return;
+  }
+  
+  // If wish has URL, open it
+  if (wish.url) {
+    openWishLink(wish.url);
+  }
+}
+
 function openWishLink(url) {
   if (url) {
     window.open(url, '_blank', 'noopener,noreferrer');
+  }
+}
+
+function openClaimDialog(wish) {
+  selectedWish.value = wish;
+  
+  // Try to load saved claimer name from session storage
+  const savedName = sessionStorage.getItem(CLAIMER_NAME_KEY);
+  if (savedName) {
+    claimerName.value = savedName;
+  }
+  
+  claimDialog.value = true;
+}
+
+function closeClaimDialog() {
+  claimDialog.value = false;
+  selectedWish.value = null;
+  claimError.value = '';
+}
+
+async function claimWish() {
+  if (!claimerName.value.trim()) {
+    claimError.value = 'Please enter your name';
+    return;
+  }
+  
+  if (!selectedWish.value) {
+    claimError.value = 'No wish selected';
+    return;
+  }
+  
+  claiming.value = true;
+  try {
+    const trimmedName = claimerName.value.trim();
+    
+    // Update the present with claim information using the existing updatePresent endpoint
+    const updatedPresent = {
+      ...selectedWish.value,
+      claimed: true,
+      claimerName: trimmedName
+    };
+    
+    await updatePresent(selectedWish.value.id, updatedPresent);
+    
+    // Save claimer name to session storage for future claims
+    sessionStorage.setItem(CLAIMER_NAME_KEY, trimmedName);
+    
+    // Update the local wish object
+    const wishIndex = wishes.value.findIndex(w => w.id === selectedWish.value.id);
+    if (wishIndex !== -1) {
+      wishes.value[wishIndex].claimed = true;
+      wishes.value[wishIndex].claimerName = trimmedName;
+    }
+    
+    closeClaimDialog();
+  } catch (e) {
+    console.error('Failed to claim wish:', e);
+    claimError.value = 'Failed to claim. Please try again.';
+  } finally {
+    claiming.value = false;
   }
 }
 
@@ -174,5 +320,16 @@ body {
 .wish-card-clickable:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
+}
+
+.wish-card-claimed {
+  opacity: 0.75;
+  background-color: #f5f5f5;
+}
+
+.wish-card-claimed:hover {
+  transform: none;
+  box-shadow: none;
+  cursor: default;
 }
 </style>
