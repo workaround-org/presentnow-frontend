@@ -36,7 +36,7 @@
 <script setup>
 import {ref, watch} from 'vue'
 import {useRoute} from 'vue-router'
-import {savePresent, updatePresent, deletePresent} from '@/api/client.js'
+import {deletePresent, savePresent, updatePresent} from '@/api/client.js'
 
 // Accept props from parent so loaded wishes show their data
 const props = defineProps({
@@ -137,10 +137,10 @@ async function save() {
   try {
     const listIdParam = props.listId ?? route.params.wishListName
     const listId = typeof listIdParam === 'string' ? (Number(listIdParam) || listIdParam) : listIdParam
-    
+
     // Ensure all fields are within database limits (255 chars)
     const truncate = (str, maxLength = 255) => str && str.length > maxLength ? str.substring(0, maxLength) : str
-    
+
     const payload = {
       listId,
       name: truncate(wish.value.name, 255) || 'Untitled Present',
@@ -148,7 +148,7 @@ async function save() {
       description: truncate(wish.value.description, 255) || '',
       importance: wish.value.importance || 0,
     }
-    
+
     // Only update if we have a REAL backend ID (not a temporary ID)
     if (savedPresentId.value && isRealBackendId.value) {
       const updated = await updatePresent(savedPresentId.value, payload)
@@ -168,13 +168,13 @@ async function save() {
 
 async function deleteWish() {
   if (isDeleting.value) return
-  
+
   // If the wish hasn't been saved to backend yet, just emit delete event
   if (!savedPresentId.value || !isRealBackendId.value) {
     emit('deleted', props.id)
     return
   }
-  
+
   isDeleting.value = true
   try {
     await deletePresent(savedPresentId.value)

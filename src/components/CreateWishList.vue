@@ -9,9 +9,17 @@
     <div class="text-center mb-10 text-h6 font-weight-bold">Congrats! Your wishlist is now online 🎉</div>
     <div class="d-flex flex-column justify-center">
       <v-card class="mx-auto mb-10" width="1000">
-        <WishListCode></WishListCode>
-        <v-text-field readonly :value="publicLink" class="mx-auto text-center" max-width="600" variant="outlined"
-                      append-inner-icon="mdi-content-copy" @click:append-inner="copyToClipboard"></v-text-field>
+        <WishListCode :wishlist-id="wishlistId"></WishListCode>
+        <v-text-field 
+          readonly 
+          :value="publicLink" 
+          class="mx-auto text-center link-field" 
+          max-width="600" 
+          variant="outlined"
+          :append-inner-icon="copyIcon" 
+          :color="copySuccess ? 'success' : 'primary'"
+          @click:append-inner="copyToClipboard">
+        </v-text-field>
       </v-card>
       <v-card class="mx-auto mb-10" width="1000">
         <v-card-title class="text-center text-h4 mb-2 font-weight-bold">Set deadline</v-card-title>
@@ -54,6 +62,10 @@ const wishes = ref([]);
 const publicLink = ref("https://presentnow.com/wishlist/1234");
 const loading = ref(false);
 const deadline = ref(null);
+const wishlistId = ref(null);
+const copyIcon = ref('mdi-content-copy');
+const copySuccess = ref(false);
+let copyTimeout = null;
 
 const props = defineProps({
   wishListName: String
@@ -79,6 +91,21 @@ function removeWish(wishId) {
 function copyToClipboard() {
   navigator.clipboard.writeText(publicLink.value).then(() => {
     console.log("Copied to clipboard: ", publicLink.value);
+    
+    // Clear any existing timeout
+    if (copyTimeout) {
+      clearTimeout(copyTimeout);
+    }
+    
+    // Change icon to checkmark and set success state
+    copyIcon.value = 'mdi-check';
+    copySuccess.value = true;
+    
+    // Reset icon and success state back after 2 seconds
+    copyTimeout = setTimeout(() => {
+      copyIcon.value = 'mdi-content-copy';
+      copySuccess.value = false;
+    }, 2000);
   }).catch(err => {
     console.error("Failed to copy: ", err);
   });
@@ -96,6 +123,7 @@ onMounted(async () => {
       const list = await getPublicWishList(listIdParam)
       if (list) {
         displayedName.value = list.name || displayedName.value
+        wishlistId.value = list.id ?? listIdParam
         if (Array.isArray(list.presentIdeas)) {
           // Ensure each present has listId for Wish component consumption
           wishes.value = list.presentIdeas.map(p => ({...p, listId: p.listId ?? list.id}))
@@ -124,5 +152,13 @@ onMounted(async () => {
 
 body {
   font-family: 'Poppins', sans-serif;
+}
+
+.link-field :deep(.v-field__append-inner) {
+  transition: all 0.3s ease;
+}
+
+.link-field :deep(.v-field__append-inner:hover) {
+  transform: scale(1.1);
 }
 </style>

@@ -51,7 +51,7 @@
                       Claimed
                     </v-chip>
                   </v-card-title>
-                  <v-card-text>
+                  <v-card-text class="pb-2">
                     <div v-if="wish.description" class="text-body-1 mb-2">
                       {{ wish.description }}
                     </div>
@@ -60,15 +60,14 @@
                       Claimed by: {{ wish.claimerName }}
                     </div>
                   </v-card-text>
-                  <v-card-actions v-if="!wish.claimed">
+                  <v-card-actions v-if="!wish.claimed" class="justify-center pt-0 pb-3">
                     <v-btn 
                       color="#e46842" 
-                      variant="text" 
-                      size="small"
+                      variant="elevated" 
+                      icon="mdi-hand-heart"
+                      size="default"
                       @click.stop="openClaimDialog(wish)"
                     >
-                      <v-icon left small>mdi-hand-heart</v-icon>
-                      I'll gift this
                     </v-btn>
                   </v-card-actions>
                 </v-card>
