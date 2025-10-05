@@ -126,7 +126,7 @@
 import '@fontsource/poppins';
 import { onMounted, ref, computed } from "vue";
 import { useRoute, useRouter } from 'vue-router';
-import { getPublicWishList, updatePresent } from '@/api/client.js';
+import { getPublicWishList, publicClaimPresent } from '@/api/client.js';
 import presentNowIcon from '@/assets/images/presentnow-icon.png';
 
 const route = useRoute();
@@ -235,23 +235,16 @@ async function claimWish() {
   try {
     const trimmedName = claimerName.value.trim();
     
-    // Update the present with claim information using the existing updatePresent endpoint
-    const updatedPresent = {
-      ...selectedWish.value,
-      claimed: true,
-      claimerName: trimmedName
-    };
-    
-    await updatePresent(selectedWish.value.id, updatedPresent);
+    // Use the new claim endpoint
+    const updatedPresent = await publicClaimPresent(selectedWish.value.id, trimmedName);
     
     // Save claimer name to session storage for future claims
     sessionStorage.setItem(CLAIMER_NAME_KEY, trimmedName);
     
-    // Update the local wish object
+    // Update the local wish object with the response data
     const wishIndex = wishes.value.findIndex(w => w.id === selectedWish.value.id);
     if (wishIndex !== -1) {
-      wishes.value[wishIndex].claimed = true;
-      wishes.value[wishIndex].claimerName = trimmedName;
+      wishes.value[wishIndex] = updatedPresent;
     }
     
     closeClaimDialog();

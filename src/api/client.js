@@ -103,6 +103,18 @@ export async function createPresentForList(listId, {name, url = '', description 
     return savePresent({listId, name, url, description, importance})
 }
 
+// Claim a present idea
+export async function claimPresent(id, claimerName) {
+    // If claimerName is provided, send it in the body
+    const body = claimerName ? { claimerName } : undefined
+    return handle(await fetch(`${ROOT}/present/${id}/claim`, await jsonOptions('POST', body)))
+}
+
+// Unclaim a present idea
+export async function unclaimPresent(id) {
+    return handle(await fetch(`${ROOT}/present/${id}/claim`, await jsonOptions('DELETE')))
+}
+
 // Public endpoints (no authentication required)
 export async function getFrontendConfig() {
     return handle(await fetch(`${ROOT}/public/config`))
@@ -114,6 +126,13 @@ export async function getPublicWishList(id) {
 
 export async function getPublicPresent(id) {
     return handle(await fetch(`${ROOT}/public/present/${id}`))
+}
+
+// Public claim endpoint - uses the regular claim endpoint without auth
+// The endpoint works without authentication for public users
+export async function publicClaimPresent(id, claimerName) {
+    const body = claimerName ? { claimerName } : undefined
+    return handle(await fetch(`${ROOT}/present/${id}/claim`, await jsonOptions('POST', body)))
 }
 
 // Example usage (remove or adapt in components):
