@@ -11,21 +11,28 @@
           class="mx-auto pa-4 mt-10"
           max-width="400"
       >
-        <v-number-input
-            control-variant="hidden"
+        <v-text-field
+            v-model="wishlistCode"
             class="mx-auto text-center"
             max-width="370"
             height="100"
             placeholder="Wishlist PIN"
             variant="outlined"
-        ></v-number-input>
+            @keyup.enter="enterWishlist"
+        ></v-text-field>
         <v-btn
+            @click="enterWishlist"
+            :loading="loading"
+            :disabled="loading"
             class="mt-n3 font-weight-bold"
             color="#333333"
             height="55"
             width="370"
         >Enter
         </v-btn>
+        <div v-if="errorMessage" class="text-center mt-3 text-error">
+          {{ errorMessage }}
+        </div>
       </v-card>
       <v-btn
           @click="showWishListDialog = true"
@@ -57,13 +64,46 @@ import {useRouter} from 'vue-router';
 import {ref, onMounted} from "vue";
 import CreateWishListDialog from "@/components/CreateWishListDialog.vue";
 import authService from '@/auth/authService.js';
+import { getPublicWishList } from '@/api/client.js';
 
 const router = useRouter();
 const showWishListDialog = ref(false);
 const checkingAuth = ref(true);
+const wishlistCode = ref('');
+const loading = ref(false);
+const errorMessage = ref('');
 
 function routeToCreateWishList() {
   router.push('/create');
+}
+
+async function enterWishlist() {
+  errorMessage.value = '';
+  
+  if (!wishlistCode.value.trim()) {
+    errorMessage.value = 'Please enter a wishlist code';
+    return;
+  }
+  
+  loading.value = true;
+  
+  try {
+    const code = wishlistCode.value.trim();
+    // Try to fetch the wishlist to verify it exists
+    const wishlist = await getPublicWishList(code);
+    
+    if (wishlist) {
+      // Navigate to the wishlist
+      router.push(`/wishlist/${code}`);
+    } else {
+      errorMessage.value = 'No Wishlist found';
+    }
+  } catch (error) {
+    console.error('Failed to load wishlist:', error);
+    errorMessage.value = 'No Wishlist found';
+  } finally {
+    loading.value = false;
+  }
 }
 
 onMounted(async () => {
