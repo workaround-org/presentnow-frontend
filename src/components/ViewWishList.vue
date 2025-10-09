@@ -144,8 +144,8 @@
         </v-card-title>
         
         <v-card-text class="case-content">
-          <!-- Case Opening Animation Container -->
-          <div class="case-container">
+          <!-- Spinning Animation Container -->
+          <div class="case-container" ref="caseContainer">
             <div class="case-frame">
               <div class="case-selector"></div>
               <div class="case-items" ref="caseItems" :class="{ 'spinning': isSpinning }">
@@ -177,7 +177,7 @@
                 {{ randomlySelectedWish?.description }}
               </div>
               <div v-if="randomlySelectedWish?.claimed" class="text-h6 text-red mb-4">
-                ⚠️ This wish has already beexn claimed!
+                ⚠️ This wish has already been claimed!
               </div>
             </div>
           </div>
@@ -188,7 +188,7 @@
         </v-card-text>
 
         <v-card-actions class="justify-center pb-4">
-          <div v-if="!isSpinning && !showResult" class="text-center">
+          <div v-if="!isSpinning && !showResult && !isPreparingSpin" class="text-center">
             <v-btn 
               color="#e46842" 
               variant="elevated"
@@ -243,7 +243,7 @@
 
 <script setup>
 import '@fontsource/poppins';
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref, computed, nextTick } from "vue";
 import { useRoute, useRouter } from 'vue-router';
 import { getPublicWishList, publicClaimPresent } from '@/api/client.js';
 import presentNowIcon from '@/assets/images/presentnow-icon.png';
@@ -267,11 +267,13 @@ const claimError = ref('');
 // Random picker state
 const randomPickerDialog = ref(false);
 const isSpinning = ref(false);
+const isPreparingSpin = ref(false);
 const showResult = ref(false);
 const randomlySelectedWish = ref(null);
-const selectedIndex = ref(0);
+const selectedIndex = ref(-1);
 const displayItems = ref([]);
 const caseItems = ref(null);
+const caseContainer = ref(null);
 
 // Session storage key for claimer name
 const CLAIMER_NAME_KEY = 'presentnow_claimer_name';
@@ -396,6 +398,16 @@ function openRandomPicker() {
   randomPickerDialog.value = true;
   showResult.value = false;
   isSpinning.value = false;
+  isPreparingSpin.value = false;
+  randomlySelectedWish.value = null;
+  selectedIndex.value = -1;
+  
+  // Ensure case items start at initial position
+  setTimeout(() => {
+    if (caseItems.value) {
+      caseItems.value.style.transform = 'translateX(0)';
+    }
+  }, 100);
 }
 
 function createDisplayItems() {
@@ -410,28 +422,109 @@ function createDisplayItems() {
   displayItems.value = items;
 }
 
-function startSpinning() {
+async function startSpinning() {
+  if (isSpinning.value) {
+    return;
+  }
+
   const unclaimedWishes = wishes.value.filter(w => !w.claimed);
-  if (unclaimedWishes.length === 0) return;
-  
+  if (unclaimedWishes.length === 0) {
+    return;
+  }
+
+  if (!displayItems.value.length) {
+    createDisplayItems();
+  }
+
+  await nextTick();
+
+  const itemsEl = caseItems.value;
+  const containerEl = caseContainer.value;
+
+  if (!itemsEl || !containerEl || !itemsEl.children.length) {
+    console.warn('Random picker not ready: missing DOM elements');
+    return;
+  }
+
+  // Reset state prior to spin
+  isPreparingSpin.value = false;
   isSpinning.value = true;
-  
-  // Randomly select a wish
-  const randomWish = unclaimedWishes[Math.floor(Math.random() * unclaimedWishes.length)];
-  randomlySelectedWish.value = randomWish;
-  
-  // Calculate the final position for the animation
-  const finalIndex = Math.floor(displayItems.value.length / 2) + Math.floor(Math.random() * 5);
-  selectedIndex.value = finalIndex;
-  
-  // Replace the item at final position with our selected wish
-  displayItems.value[finalIndex] = randomWish;
-  
-  // Stop spinning after animation duration
+  showResult.value = false;
+  randomlySelectedWish.value = null;
+  selectedIndex.value = -1;
+
+  // Reset transform to ensure consistent animation
+  itemsEl.style.transition = 'none';
+  itemsEl.style.transform = 'translateX(0)';
+  void itemsEl.offsetWidth; // Force reflow
+  itemsEl.style.transition = '';
+
+  const totalItems = itemsEl.children.length;
+  const uniqueCount = unclaimedWishes.length;
+
+  // Choose a target index that keeps several full loops before/after the selected wish
+  const loopsBeforeSelection = 4;
+  const loopsAfterSelection = 4;
+  const minIndex = Math.min(totalItems - 1, uniqueCount * loopsBeforeSelection);
+  const maxIndex = Math.max(minIndex, totalItems - (uniqueCount * loopsAfterSelection) - 1);
+  const randomIndex = minIndex + Math.floor(Math.random() * Math.max(1, maxIndex - minIndex + 1));
+
+  const targetElement = itemsEl.children[randomIndex];
+  if (!targetElement) {
+    console.warn('Unable to locate target element for random picker');
+    isSpinning.value = false;
+    return;
+  }
+
+  const selectorPosition = containerEl.clientWidth / 2;
+  const itemCenter = targetElement.offsetLeft + targetElement.clientWidth / 2;
+  const finalTranslate = itemCenter - selectorPosition;
+
+  requestAnimationFrame(() => {
+    itemsEl.style.transform = `translateX(-${finalTranslate}px)`;
+  });
+
+  const spinDuration = getTransitionDurationMs(itemsEl) + 100; // add a small buffer
+
   setTimeout(() => {
+    selectedIndex.value = randomIndex;
+    randomlySelectedWish.value = displayItems.value[randomIndex] || null;
     isSpinning.value = false;
     showResult.value = true;
-  }, 3000);
+  }, spinDuration);
+}
+
+function parseTimeToMs(value) {
+  if (!value) {
+    return 0;
+  }
+
+  const trimmed = value.trim();
+  if (trimmed.endsWith('ms')) {
+    return parseFloat(trimmed.replace('ms', '')) || 0;
+  }
+
+  if (trimmed.endsWith('s')) {
+    return (parseFloat(trimmed.replace('s', '')) || 0) * 1000;
+  }
+
+  const numeric = parseFloat(trimmed);
+  return Number.isFinite(numeric) ? numeric * 1000 : 0;
+}
+
+function getTransitionDurationMs(element) {
+  if (typeof window === 'undefined' || !element) {
+    return 3000;
+  }
+
+  const style = window.getComputedStyle(element);
+  const durations = style.transitionDuration.split(',').map(parseTimeToMs);
+  const delays = style.transitionDelay.split(',').map(parseTimeToMs);
+
+  const maxDuration = durations.length ? Math.max(...durations) : 3000;
+  const maxDelay = delays.length ? Math.max(...delays) : 0;
+
+  return maxDuration + maxDelay;
 }
 
 function claimRandomWish() {
@@ -451,7 +544,13 @@ function rollAgain() {
   // Reset the result state and prepare for another spin
   showResult.value = false;
   randomlySelectedWish.value = null;
-  selectedIndex.value = 0;
+  selectedIndex.value = -1;
+  isPreparingSpin.value = true;
+  
+  // Reset the transform of case items
+  if (caseItems.value) {
+    caseItems.value.style.transform = 'translateX(0)';
+  }
   
   // Recreate display items to ensure fresh randomization
   createDisplayItems();
@@ -469,8 +568,14 @@ function closeRandomPicker() {
     showResult.value = false;
     isSpinning.value = false;
     randomlySelectedWish.value = null;
-    selectedIndex.value = 0;
+  selectedIndex.value = -1;
     displayItems.value = [];
+  isPreparingSpin.value = false;
+    
+    // Reset the transform of case items
+    if (caseItems.value) {
+      caseItems.value.style.transform = 'translateX(0)';
+    }
   }, 300);
 }
 
@@ -617,7 +722,7 @@ body {
 }
 
 .case-items.spinning {
-  animation: spin 3s cubic-bezier(0.23, 1, 0.320, 1) forwards;
+  /* Animation will be handled by JavaScript for precise positioning */
 }
 
 @keyframes spin {
@@ -625,7 +730,8 @@ body {
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-2000px);
+    /* Final position will be set by JavaScript */
+    transform: var(--final-transform, translateX(-2000px));
   }
 }
 
@@ -654,6 +760,8 @@ body {
 
 .case-item.selected .item-card {
   transform: scale(1.05);
+  border: 3px solid #e46842 !important;
+  box-shadow: 0 0 15px rgba(228, 104, 66, 0.8) !important;
 }
 
 .item-name {
