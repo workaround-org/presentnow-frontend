@@ -1,44 +1,78 @@
 <template>
-  <v-dialog max-width="500">
-    <v-card>
-      <v-card-title>
-        <h3 class="text-center mt-3">Give your wishlist a name</h3>
+  <v-dialog :model-value="modelValue" @update:model-value="emit('update:modelValue', $event)" max-width="500" persistent>
+    <v-card class="dialog-card">
+      <v-card-title class="dialog-header">
+        <v-icon left color="#e46842" size="large">mdi-gift-open</v-icon>
+        <span class="dialog-title-text">Create Your Wishlist</span>
       </v-card-title>
-      <v-card-text class="mb-n7">
+      
+      <v-card-text class="dialog-content">
+        <p class="dialog-subtitle">Give your wishlist a memorable name</p>
         <v-text-field
             v-model="wishlistName"
-            control-variant="hidden"
-            class="mx-auto text-center"
-            max-width="370"
-            height="100"
-            placeholder="Wishlist name"
+            placeholder="e.g., Birthday 2024"
             variant="outlined"
-        ></v-text-field>
+            density="comfortable"
+            color="#e46842"
+            maxlength="100"
+            counter
+            autofocus
+            hide-details="auto"
+            @keyup.enter="createWishlist"
+        >
+          <template v-slot:prepend-inner>
+            <v-icon color="#e46842">mdi-pencil</v-icon>
+          </template>
+        </v-text-field>
       </v-card-text>
-      <div class="d-flex justify-center">
+      
+      <v-card-actions class="dialog-actions">
+        <v-btn
+            color="grey"
+            variant="text"
+            @click="$emit('update:modelValue', false)"
+            :disabled="isSaving"
+        >
+          Cancel
+        </v-btn>
         <v-btn
             @click="createWishlist"
-            class="font-weight-bold ma-3 mb-8"
-            color="#333333"
-            height="55"
-            width="370"
+            class="create-btn"
+            color="#e46842"
+            size="large"
             :loading="isSaving"
-            :disabled="isSaving"
-        >Create
+            :disabled="isSaving || !wishlistName.trim()"
+            elevation="2"
+        >
+          <v-icon left>mdi-check-circle</v-icon>
+          Create Wishlist
         </v-btn>
-      </div>
+      </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script setup>
 import {useRouter} from "vue-router";
-import {ref} from "vue";
+import {ref, watch} from "vue";
 import {saveWishList} from '@/api/client.js'
+
+const props = defineProps({
+  modelValue: Boolean
+});
+
+const emit = defineEmits(['update:modelValue']);
 
 const router = useRouter();
 const wishlistName = ref('');
 const isSaving = ref(false);
+
+// Reset form when dialog closes
+watch(() => props.modelValue, (newVal) => {
+  if (!newVal) {
+    wishlistName.value = '';
+  }
+});
 
 async function createWishlist() {
   if (isSaving.value) return;
@@ -61,6 +95,7 @@ async function createWishlist() {
     } else {
       router.push(`/create/${name}`);
     }
+    emit('update:modelValue', false);
   } catch (e) {
     console.error('Failed to create wishlist', e);
   } finally {
@@ -70,7 +105,85 @@ async function createWishlist() {
 </script>
 
 <style scoped>
+.dialog-card {
+  border-radius: 16px !important;
+  overflow: hidden;
+}
 
+.dialog-header {
+  background: linear-gradient(135deg, #e46842 0%, #d94d27 100%);
+  color: white;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dialog-title-text {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.dialog-content {
+  padding: 2rem 1.5rem 1.5rem;
+}
+
+.dialog-subtitle {
+  color: #666;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.dialog-actions {
+  padding: 1rem 1.5rem 1.5rem;
+  justify-content: space-between;
+}
+
+.create-btn {
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.5px;
+  border-radius: 8px !important;
+  transition: all 0.3s ease;
+}
+
+.create-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(228, 104, 66, 0.3) !important;
+}
+
+@media (max-width: 600px) {
+  .dialog-card {
+    margin: 1rem;
+    border-radius: 12px !important;
+  }
+  
+  .dialog-header {
+    padding: 1rem;
+  }
+  
+  .dialog-title-text {
+    font-size: 1.2rem;
+  }
+  
+  .dialog-content {
+    padding: 1.5rem 1rem 1rem;
+  }
+  
+  .dialog-subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+  
+  .dialog-actions {
+    padding: 0.75rem 1rem 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .dialog-actions .v-btn {
+    width: 100%;
+  }
+}
 </style>
-
-

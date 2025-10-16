@@ -1,59 +1,84 @@
 <template>
   <div class="bg-image">
     <div class="content-wrapper" v-if="!checkingAuth">
-      <v-img
-          class="mx-auto mb-n6"
-          :width="200"
-          src="src/assets/images/presentnow-icon.png"
-      ></v-img>
-      <h1 :style="{ color: '#e46842' }" class="text-center">presentnow</h1>
+      <div class="hero-section">
+        <v-img
+            class="mx-auto logo-img"
+            :width="isMobile ? 150 : 200"
+            src="src/assets/images/presentnow-icon.png"
+        ></v-img>
+        <h1 class="app-title">presentnow</h1>
+        <p class="app-subtitle">Your wishlist, beautifully shared</p>
+      </div>
+      
       <v-card
-          class="mx-auto pa-4 mt-10"
-          max-width="400"
+          class="main-card mx-auto pa-6 elevation-8"
+          max-width="450"
       >
-        <v-text-field
-            v-model="wishlistCode"
-            class="mx-auto text-center"
-            max-width="370"
-            height="100"
-            placeholder="Wishlist PIN"
-            variant="outlined"
-            @keyup.enter="enterWishlist"
-        ></v-text-field>
-        <v-btn
-            @click="enterWishlist"
-            :loading="loading"
-            :disabled="loading"
-            class="mt-n3 font-weight-bold"
-            color="#333333"
-            height="55"
-            width="370"
-        >Enter
-        </v-btn>
-        <div v-if="errorMessage" class="text-center mt-3 text-error">
-          {{ errorMessage }}
+        <div class="card-section">
+          <h2 class="section-title">Enter Wishlist</h2>
+          <v-text-field
+              v-model="wishlistCode"
+              class="wishlist-input"
+              placeholder="Enter PIN code"
+              variant="outlined"
+              density="comfortable"
+              color="#e46842"
+              @keyup.enter="enterWishlist"
+              :error-messages="errorMessage"
+              hide-details="auto"
+          >
+            <template v-slot:prepend-inner>
+              <v-icon color="#e46842">mdi-key-variant</v-icon>
+            </template>
+          </v-text-field>
+          <v-btn
+              @click="enterWishlist"
+              :loading="loading"
+              :disabled="loading || !wishlistCode.trim()"
+              class="action-btn enter-btn mt-4"
+              color="#333333"
+              size="large"
+              block
+              elevation="2"
+          >
+            <v-icon left>mdi-login</v-icon>
+            Enter Wishlist
+          </v-btn>
+        </div>
+        
+        <v-divider class="my-6"></v-divider>
+        
+        <div class="card-section">
+          <h2 class="section-title">Create New</h2>
+          <v-btn
+              @click="showWishListDialog = true"
+              class="action-btn create-btn"
+              color="#e46842"
+              size="large"
+              block
+              elevation="2"
+          >
+            <v-icon left>mdi-gift</v-icon>
+            Create Your Wishlist
+          </v-btn>
         </div>
       </v-card>
-      <v-btn
-          @click="showWishListDialog = true"
-          class="mx-auto d-block mt-10 font-weight-bold"
-          color="#e46842"
-          height="55"
-          width="370"
-      >Create your own Wishlist
-      </v-btn>
+      
       <CreateWishListDialog
           v-model="showWishListDialog"
       />
     </div>
     <div class="content-wrapper" v-else>
-      <v-progress-circular
-          class="mx-auto d-block"
-          indeterminate
-          color="#e46842"
-          size="64"
-      ></v-progress-circular>
-      <p class="text-center mt-4">Checking authentication...</p>
+      <div class="loading-container">
+        <v-progress-circular
+            indeterminate
+            color="#e46842"
+            size="64"
+            width="6"
+        ></v-progress-circular>
+        <p class="loading-text">Checking authentication...</p>
+      </div>
     </div>
   </div>
 </template>
@@ -61,10 +86,14 @@
 <script setup>
 import '@fontsource/poppins';
 import {useRouter} from 'vue-router';
-import {ref, onMounted} from "vue";
+import {ref, onMounted, computed} from "vue";
 import CreateWishListDialog from "@/components/CreateWishListDialog.vue";
 import authService from '@/auth/authService.js';
 import { getPublicWishList } from '@/api/client.js';
+import { useDisplay } from 'vuetify';
+
+const { mobile } = useDisplay();
+const isMobile = computed(() => mobile.value);
 
 const router = useRouter();
 const showWishListDialog = ref(false);
@@ -126,25 +155,165 @@ onMounted(async () => {
 .bg-image {
   background-image: url('../assets/images/background.png');
   background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
   min-height: 100vh;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-body {
-  font-family: 'Poppins', sans-serif;
+  padding: 2rem 1rem;
 }
 
 .content-wrapper {
   width: 100%;
-  padding: 2rem 0;
-  margin-top: -5vh;
+  max-width: 600px;
+  animation: fadeIn 0.5s ease-in;
 }
 
-:deep(.v-field__input) {
+.hero-section {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.logo-img {
+  animation: scaleIn 0.6s ease-out;
+  margin-bottom: 1rem;
+}
+
+.app-title {
+  color: #e46842;
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 0.5rem 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  animation: slideDown 0.5s ease-out;
+}
+
+.app-subtitle {
+  color: #555;
+  font-size: 1.1rem;
+  font-weight: 400;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.main-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px !important;
+  animation: slideUp 0.5s ease-out;
+}
+
+.card-section {
+  margin: 0.5rem 0;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.wishlist-input :deep(.v-field__input) {
   text-align: center !important;
-  font-family: 'Poppins', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: 2px;
+}
+
+.action-btn {
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.5px;
+  border-radius: 8px !important;
+  transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
+}
+
+.enter-btn:disabled {
+  opacity: 0.6;
+}
+
+.create-btn {
+  background: linear-gradient(135deg, #e46842 0%, #d94d27 100%) !important;
+}
+
+.loading-container {
+  text-align: center;
+  padding: 3rem;
+}
+
+.loading-text {
+  color: #555;
+  font-size: 1.1rem;
+  margin-top: 1.5rem;
+  font-weight: 500;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 600px) {
+  .app-title {
+    font-size: 2.5rem;
+  }
+  
+  .app-subtitle {
+    font-size: 1rem;
+  }
+  
+  .bg-image {
+    padding: 1rem 0.5rem;
+  }
+  
+  .main-card {
+    padding: 1.5rem !important;
+  }
 }
 </style>

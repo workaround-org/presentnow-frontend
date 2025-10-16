@@ -9,5 +9,18 @@
   </v-app>
 </template>
 
-<style scoped>
+<style>
+* {
+  font-family: 'Poppins', sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+}
 </style>

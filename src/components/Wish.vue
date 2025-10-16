@@ -1,36 +1,134 @@
 <template>
-  <div>
-    <v-container class="d-flex">
-      <v-text-field class="mx-auto mr-2" variant="outlined" placeholder="Name" width="30"
-                    v-model="wish.name" @blur="autoSave" maxlength="255" counter></v-text-field>
-      <v-text-field class="mx-auto mr-2" variant="outlined" placeholder="Description" width="200"
-                    v-model="wish.description" @blur="autoSave" maxlength="255" counter></v-text-field>
-      <v-btn color="blue" rounded="0" icon="mdi-link" class="mx-auto d-block mr-2 mt-1 wish-buttons"
-             @click="dialog = true"></v-btn>
-      <v-btn color="red" rounded="0" icon="mdi-delete" class="mx-auto d-block mt-1 wish-buttons"
-             @click="deleteWish" :loading="isDeleting" :disabled="isDeleting"></v-btn>
-    </v-container>
-    <v-dialog v-model="dialog" style="max-width: 55rem;">
-      <v-card>
-        <v-card-title class="text-center">Add Link</v-card-title>
-        <v-card-text>
+  <v-card class="wish-card elevation-2 mb-3">
+    <div class="wish-content">
+      <div class="wish-fields">
+        <v-text-field 
+          class="wish-input" 
+          variant="outlined" 
+          placeholder="Wish name *" 
+          density="comfortable"
+          v-model="wish.name" 
+          @blur="autoSave" 
+          maxlength="255" 
+          counter
+          hide-details="auto"
+          color="#e46842"
+        >
+          <template v-slot:prepend-inner>
+            <v-icon color="#e46842" size="small">mdi-gift</v-icon>
+          </template>
+        </v-text-field>
+        
+        <v-text-field 
+          class="wish-input" 
+          variant="outlined" 
+          placeholder="Description (optional)" 
+          density="comfortable"
+          v-model="wish.description" 
+          @blur="autoSave" 
+          maxlength="255" 
+          counter
+          hide-details="auto"
+          color="#e46842"
+        >
+          <template v-slot:prepend-inner>
+            <v-icon color="#999" size="small">mdi-text</v-icon>
+          </template>
+        </v-text-field>
+      </div>
+      
+      <div class="wish-actions">
+        <v-tooltip text="Add link" location="top">
+          <template v-slot:activator="{ props }">
+            <v-btn 
+              v-bind="props"
+              color="#2196f3" 
+              icon
+              size="default"
+              class="action-btn"
+              @click="dialog = true"
+              elevation="2"
+            >
+              <v-icon>mdi-link-variant</v-icon>
+            </v-btn>
+          </template>
+        </v-tooltip>
+        
+        <v-tooltip text="Delete wish" location="top">
+          <template v-slot:activator="{ props }">
+            <v-btn 
+              v-bind="props"
+              color="#f44336" 
+              icon
+              size="default"
+              class="action-btn"
+              @click="deleteWish" 
+              :loading="isDeleting" 
+              :disabled="isDeleting"
+              elevation="2"
+            >
+              <v-icon>mdi-delete</v-icon>
+            </v-btn>
+          </template>
+        </v-tooltip>
+      </div>
+    </div>
+    
+    <v-expand-transition>
+      <div v-if="wish.url" class="link-preview">
+        <v-icon size="small" color="#2196f3" class="mr-2">mdi-link</v-icon>
+        <a :href="wish.url" target="_blank" rel="noopener noreferrer" class="link-text">
+          {{ wish.url }}
+        </a>
+      </div>
+    </v-expand-transition>
+    
+    <v-dialog v-model="dialog" max-width="600">
+      <v-card class="dialog-card">
+        <v-card-title class="dialog-title">
+          <v-icon left color="#2196f3">mdi-link-variant</v-icon>
+          Add Link to Wish
+        </v-card-title>
+        <v-card-text class="py-4">
           <v-text-field
               v-model="wish.url"
               variant="outlined"
-              placeholder="Link"
+              placeholder="https://example.com/product"
               maxlength="255"
               counter
               :error-messages="urlError"
-              @input="urlError = ''"></v-text-field>
+              @input="urlError = ''"
+              color="#2196f3"
+              density="comfortable"
+          >
+            <template v-slot:prepend-inner>
+              <v-icon color="#2196f3">mdi-web</v-icon>
+            </template>
+          </v-text-field>
         </v-card-text>
-        <v-spacer></v-spacer>
-        <v-btn color="#e46842"
-               class="mx-auto mb-5 mt-n4 font-weight-bold" height="50" width="250"
-               @click="saveLink" :loading="isSaving" :disabled="isSaving">Save
-        </v-btn>
+        <v-card-actions class="justify-center pb-4">
+          <v-btn 
+            color="grey" 
+            variant="text"
+            @click="dialog = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn 
+            color="#2196f3" 
+            variant="elevated"
+            @click="saveLink" 
+            :loading="isSaving" 
+            :disabled="isSaving"
+            class="save-btn"
+          >
+            <v-icon left>mdi-check</v-icon>
+            Save Link
+          </v-btn>
+        </v-card-actions>
       </v-card>
     </v-dialog>
-  </div>
+  </v-card>
 </template>
 
 <script setup>
@@ -190,7 +288,133 @@ async function deleteWish() {
 </script>
 
 <style scoped>
-.wish-buttons {
-  border-radius: 4px !important;
+.wish-card {
+  border-radius: 12px !important;
+  transition: all 0.3s ease;
+  border-left: 4px solid #e46842;
+  background: white;
+  overflow: hidden;
+}
+
+.wish-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.wish-content {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem;
+  align-items: flex-start;
+}
+
+.wish-fields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0; /* Important for flex text overflow */
+}
+
+.wish-input {
+  font-size: 0.95rem;
+  width: 100%;
+}
+
+.wish-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  transition: all 0.3s ease;
+  border-radius: 8px !important;
+}
+
+.action-btn:hover {
+  transform: scale(1.1);
+}
+
+.link-preview {
+  padding: 0.75rem 1rem;
+  background: #f5f5f5;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+}
+
+.link-text {
+  color: #2196f3;
+  text-decoration: none;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.link-text:hover {
+  text-decoration: underline;
+}
+
+.dialog-card {
+  border-radius: 16px !important;
+}
+
+.dialog-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  padding: 1.5rem;
+  border-bottom: 2px solid #f0f0f0;
+  color: #333;
+}
+
+.save-btn {
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.5px;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .wish-content {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.75rem;
+  }
+  
+  .wish-fields {
+    width: 100%;
+  }
+  
+  .wish-actions {
+    flex-direction: row;
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .link-preview {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .dialog-title {
+    font-size: 1.1rem;
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .wish-content {
+    padding: 0.5rem;
+  }
+  
+  .wish-input {
+    font-size: 0.9rem;
+  }
+  
+  .action-btn {
+    width: 40px;
+    height: 40px;
+  }
 }
 </style>

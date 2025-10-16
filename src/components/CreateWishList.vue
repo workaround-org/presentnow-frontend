@@ -1,46 +1,119 @@
 <template>
   <div class="bg-image">
-    <div class="position-absolute mt-n10" @click="toHome" style="cursor: pointer;">
-      <v-img class="mb-n1 ml-5" :width="100" :src="presentNowIcon"></v-img>
-      <h3 :style="{ color: '#e46842' }" class="ml-4">presentnow</h3>
+    <div class="header-nav" @click="toHome">
+      <v-img class="logo-small" :width="80" :src="presentNowIcon"></v-img>
+      <h3 class="logo-text">presentnow</h3>
     </div>
-    <div :style="{ color: '#e46842' }" class="text-center mb-3 mt-10 text-h3 font-weight-bold"> {{ displayedName }}
-    </div>
-    <div class="text-center mb-10 text-h6 font-weight-bold">Congrats! Your wishlist is now online 🎉</div>
-    <div class="d-flex flex-column justify-center">
-      <v-card class="mx-auto mb-10" width="1000">
-        <WishListCode :wishlist-id="wishlistId"></WishListCode>
-        <v-text-field 
-          readonly 
-          :value="publicLink" 
-          class="mx-auto text-center link-field" 
-          max-width="600" 
-          variant="outlined"
-          :append-inner-icon="copyIcon" 
-          :color="copySuccess ? 'success' : 'primary'"
-          @click:append-inner="copyToClipboard">
-        </v-text-field>
-      </v-card>
-      <v-card class="mx-auto mb-10" width="1000">
-        <v-card-title class="text-center text-h4 mb-2 font-weight-bold">Set deadline</v-card-title>
-        <v-date-input class="mx-auto text-center" max-width="600" label="Select a date" prepend-icon=""
-                      prepend-inner-icon="$calendar" variant="solo" v-model="deadline"></v-date-input>
-        <!--Update is not implemented yet-->
-      </v-card>
-      <v-card class="mx-auto" width="1000">
-        <v-card-title class="text-center text-h4 mb-2 font-weight-bold">Wishes</v-card-title>
-        <v-btn color="#e46842" class="mx-auto d-block mb-10 font-weight-bold" height="50" width="250"
-               @click="addWish">Add wish
-        </v-btn>
-        <div v-if="loading" class="text-center mb-6">Loading wishes...</div>
-        <div v-else>
-          <div v-for="present in wishes" :key="present.id">
-            <Wish :name="present.name" :description="present.description" :url="present.url"
-                  :importance="present.importance" :id="present.id" :list-id="present.listId"
-                  @deleted="removeWish"/>
-          </div>
+    
+    <div class="main-content">
+      <div class="page-header">
+        <h1 class="wishlist-name">{{ displayedName }}</h1>
+        <div class="success-message">
+          <v-icon color="#4caf50" size="large" class="mr-2">mdi-check-circle</v-icon>
+          <span>Your wishlist is now online!</span>
         </div>
-      </v-card>
+      </div>
+      
+      <div class="cards-container">
+        <!-- Share Card -->
+        <v-card class="info-card elevation-4">
+          <v-card-title class="card-title">
+            <v-icon left color="#e46842">mdi-share-variant</v-icon>
+            Share Your Wishlist
+          </v-card-title>
+          <v-card-text>
+            <WishListCode :wishlist-id="wishlistId" class="mb-4"></WishListCode>
+            <v-text-field 
+              readonly 
+              :value="publicLink" 
+              class="link-field" 
+              variant="outlined"
+              density="comfortable"
+              :append-inner-icon="copyIcon" 
+              :color="copySuccess ? 'success' : 'primary'"
+              @click:append-inner="copyToClipboard"
+              hide-details
+            >
+              <template v-slot:prepend-inner>
+                <v-icon color="#e46842">mdi-link</v-icon>
+              </template>
+            </v-text-field>
+            <v-scale-transition>
+              <div v-if="copySuccess" class="copy-feedback">
+                <v-icon color="success" size="small" class="mr-1">mdi-check</v-icon>
+                Link copied!
+              </div>
+            </v-scale-transition>
+          </v-card-text>
+        </v-card>
+
+        <!-- Deadline Card -->
+        <v-card class="info-card elevation-4">
+          <v-card-title class="card-title">
+            <v-icon left color="#e46842">mdi-calendar-clock</v-icon>
+            Set Deadline
+          </v-card-title>
+          <v-card-text>
+            <v-date-input 
+              v-model="deadline"
+              label="Choose a date" 
+              prepend-icon=""
+              prepend-inner-icon="$calendar" 
+              variant="outlined"
+              density="comfortable"
+              color="#e46842"
+              hide-details
+            ></v-date-input>
+          </v-card-text>
+        </v-card>
+
+        <!-- Wishes Card -->
+        <v-card class="wishes-card elevation-4">
+          <v-card-title class="card-title">
+            <v-icon left color="#e46842">mdi-gift</v-icon>
+            Your Wishes
+          </v-card-title>
+          <v-card-text>
+            <v-btn 
+              color="#e46842" 
+              class="add-wish-btn mb-6" 
+              size="large"
+              @click="addWish"
+              block
+              elevation="2"
+            >
+              <v-icon left>mdi-plus-circle</v-icon>
+              Add New Wish
+            </v-btn>
+            
+            <v-expand-transition>
+              <div v-if="loading" class="loading-state">
+                <v-progress-circular indeterminate color="#e46842"></v-progress-circular>
+                <p>Loading wishes...</p>
+              </div>
+            </v-expand-transition>
+            
+            <div v-if="!loading && wishes.length === 0" class="empty-state">
+              <v-icon size="64" color="#ccc">mdi-gift-outline</v-icon>
+              <p>No wishes yet. Add your first wish!</p>
+            </div>
+            
+            <v-expand-transition group>
+              <div v-for="present in wishes" :key="present.id" class="wish-item">
+                <Wish 
+                  :name="present.name" 
+                  :description="present.description" 
+                  :url="present.url"
+                  :importance="present.importance" 
+                  :id="present.id" 
+                  :list-id="present.listId"
+                  @deleted="removeWish"
+                />
+              </div>
+            </v-expand-transition>
+          </v-card-text>
+        </v-card>
+      </div>
     </div>
   </div>
 </template>
@@ -146,19 +219,261 @@ onMounted(async () => {
 .bg-image {
   background-image: url('@/assets/images/background.png');
   background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
   min-height: 100vh;
   width: 100%;
+  padding: 2rem 1rem;
 }
 
-body {
-  font-family: 'Poppins', sans-serif;
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  margin-bottom: 2rem;
+  width: fit-content;
+}
+
+.header-nav:hover {
+  transform: scale(1.05);
+}
+
+.logo-small {
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.logo-text {
+  color: #e46842;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  animation: fadeIn 0.6s ease-in;
+}
+
+.wishlist-name {
+  color: #e46842;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.success-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #4caf50;
+}
+
+.cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.info-card,
+.wishes-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px !important;
+  animation: slideUp 0.5s ease-out;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.info-card:hover,
+.wishes-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  padding: 1.5rem;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.link-field {
+  margin-top: 1rem;
+}
+
+.link-field :deep(.v-field__input) {
+  text-align: center;
+  font-size: 0.95rem;
+  color: #666;
 }
 
 .link-field :deep(.v-field__append-inner) {
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .link-field :deep(.v-field__append-inner:hover) {
-  transform: scale(1.1);
+  transform: scale(1.2);
+}
+
+.copy-feedback {
+  text-align: center;
+  margin-top: 0.5rem;
+  color: #4caf50;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.add-wish-btn {
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.5px;
+  border-radius: 8px !important;
+  transition: all 0.3s ease;
+}
+
+.add-wish-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(228, 104, 66, 0.3) !important;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.loading-state p {
+  margin-top: 1rem;
+  font-size: 1rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #999;
+}
+
+.empty-state p {
+  margin-top: 1rem;
+  font-size: 1.1rem;
+}
+
+.wish-item {
+  margin-bottom: 1rem;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 960px) {
+  .wishlist-name {
+    font-size: 2rem;
+  }
+  
+  .success-message {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .bg-image {
+    padding: 1rem 0.5rem;
+  }
+  
+  .wishlist-name {
+    font-size: 1.8rem;
+    padding: 0 0.5rem;
+  }
+  
+  .card-title {
+    font-size: 1.2rem;
+    padding: 1rem;
+  }
+  
+  .info-card,
+  .wishes-card {
+    border-radius: 12px !important;
+    margin: 0 0 1rem 0;
+  }
+  
+  .add-wish-btn {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-nav {
+    margin-bottom: 1rem;
+  }
+  
+  .logo-small {
+    width: 60px !important;
+  }
+  
+  .logo-text {
+    font-size: 1.2rem;
+  }
+  
+  .wishlist-name {
+    font-size: 1.5rem;
+  }
+  
+  .success-message {
+    font-size: 0.9rem;
+  }
+  
+  .page-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .card-title {
+    font-size: 1.1rem;
+  }
+  
+  .link-field :deep(.v-field__input) {
+    font-size: 0.85rem;
+  }
 }
 </style>
