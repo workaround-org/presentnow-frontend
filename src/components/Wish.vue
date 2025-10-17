@@ -1,5 +1,12 @@
 <template>
   <v-card class="wish-card elevation-2 mb-3">
+    <div v-if="claimed" class="claimed-banner">
+      <v-chip color="success" size="small" class="claimed-chip">
+        <v-icon size="small" start>mdi-check-circle</v-icon>
+        Claimed by {{ claimerName }}
+      </v-chip>
+    </div>
+    
     <div class="wish-content">
       <div class="wish-fields">
         <v-text-field 
@@ -50,6 +57,24 @@
               elevation="2"
             >
               <v-icon>mdi-link-variant</v-icon>
+            </v-btn>
+          </template>
+        </v-tooltip>
+        
+        <v-tooltip v-if="claimed" text="Unclaim present" location="top">
+          <template v-slot:activator="{ props }">
+            <v-btn 
+              v-bind="props"
+              color="#ff9800" 
+              icon
+              size="default"
+              class="action-btn"
+              @click="unclaimWish" 
+              :loading="isUnclaiming" 
+              :disabled="isUnclaiming"
+              elevation="2"
+            >
+              <v-icon>mdi-hand-back-left</v-icon>
             </v-btn>
           </template>
         </v-tooltip>
@@ -134,7 +159,8 @@
 <script setup>
 import {ref, watch} from 'vue'
 import {useRoute} from 'vue-router'
-import {deletePresent, savePresent, updatePresent} from '@/api/client.js'
+import {deletePresent, savePresent, updatePresent, unclaimPresent} from '@/api/client.js'
+import authService from '@/auth/authService.js'
 
 // Accept props from parent so loaded wishes show their data
 const props = defineProps({
@@ -144,9 +170,11 @@ const props = defineProps({
   description: String,
   url: String,
   importance: Number,
+  claimed: Boolean,
+  claimerName: String,
 })
 
-const emit = defineEmits(['deleted'])
+const emit = defineEmits(['deleted', 'unclaimed'])
 
 const route = useRoute()
 
@@ -199,6 +227,7 @@ watch(() => props.id, (newId) => {
 const dialog = ref(false)
 const isSaving = ref(false)
 const isDeleting = ref(false)
+const isUnclaiming = ref(false)
 const urlError = ref('')
 
 async function saveLink() {
@@ -285,6 +314,42 @@ async function deleteWish() {
     isDeleting.value = false
   }
 }
+
+async function unclaimWish() {
+  if (isUnclaiming.value) return
+  
+  // Check if user is authenticated
+  const isAuthenticated = await authService.isAuthenticated()
+  
+  if (!isAuthenticated) {
+    // Trigger OIDC login
+    try {
+      await authService.login()
+      // After login redirect, the page will reload and user can try again
+      return
+    } catch (e) {
+      console.error('Login failed:', e)
+      return
+    }
+  }
+  
+  // If the wish hasn't been saved to backend yet, do nothing
+  if (!savedPresentId.value || !isRealBackendId.value) {
+    return
+  }
+  
+  isUnclaiming.value = true
+  try {
+    const updated = await unclaimPresent(savedPresentId.value)
+    console.log('Present unclaimed:', savedPresentId.value)
+    // Emit event to parent to update the wish
+    emit('unclaimed', props.id || savedPresentId.value)
+  } catch (e) {
+    console.error('Failed to unclaim present', e)
+  } finally {
+    isUnclaiming.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -298,6 +363,19 @@ async function deleteWish() {
 
 .wish-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.claimed-banner {
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border-bottom: 1px solid #a5d6a7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.claimed-chip {
+  font-weight: 600;
 }
 
 .wish-content {

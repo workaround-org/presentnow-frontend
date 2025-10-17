@@ -107,7 +107,10 @@
                   :importance="present.importance" 
                   :id="present.id" 
                   :list-id="present.listId"
+                  :claimed="present.claimed"
+                  :claimer-name="present.claimerName"
                   @deleted="removeWish"
+                  @unclaimed="handleUnclaim"
                 />
               </div>
             </v-expand-transition>
@@ -159,6 +162,15 @@ function addWish() {
 
 function removeWish(wishId) {
   wishes.value = wishes.value.filter(w => w.id !== wishId)
+}
+
+function handleUnclaim(presentId) {
+  // Update the wish to reflect it's unclaimed
+  const wishIndex = wishes.value.findIndex(w => w.id === presentId)
+  if (wishIndex !== -1) {
+    wishes.value[wishIndex].claimed = false
+    wishes.value[wishIndex].claimerName = null
+  }
 }
 
 function copyToClipboard() {
