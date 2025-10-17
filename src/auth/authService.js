@@ -24,6 +24,10 @@ class AuthService {
       userStore: new WebStorageStateStore({ store: window.localStorage }),
       automaticSilentRenew: true,
       silent_redirect_uri: `${window.location.origin}/silent-renew.html`,
+      // Add audience parameter
+      extraQueryParams: {
+        audience: "https://workaround-org.eu.auth0.com/api/v2/"
+      }
     };
 
     this.userManager = new UserManager(settings);
