@@ -162,7 +162,7 @@
 
 <script setup>
 import '@fontsource/poppins';
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref, computed, watch } from "vue";
 import { useRoute, useRouter } from 'vue-router';
 import { getPublicWishList, publicClaimPresent } from '@/api/client.js';
 import presentNowIcon from '@/assets/images/presentnow-icon.png';
@@ -302,6 +302,12 @@ async function claimWish() {
     claiming.value = false;
   }
 }
+
+watch(wishListName, (newName) => {
+  if (newName) {
+    document.title = `${newName} - presentnow`;
+  }
+});
 
 onMounted(async () => {
   try {
