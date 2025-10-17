@@ -132,7 +132,7 @@ export async function getPublicPresent(id) {
 // The endpoint works without authentication for public users
 export async function publicClaimPresent(id, claimerName) {
     const body = claimerName ? { claimerName } : undefined
-    return handle(await fetch(`${ROOT}/present/${id}/claim`, await jsonOptions('POST', body)))
+    return handle(await fetch(`${ROOT}/public/${id}/claim`, await jsonOptions('POST', body)))
 }
 
 // Example usage (remove or adapt in components):
