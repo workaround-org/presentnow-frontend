@@ -379,10 +379,30 @@ function handleWishClick(wish) {
   if (wish.claimed) {
     return;
   }
+<<<<<<< HEAD
 
   if (wish.url) {
     openWishLink(wish.url);
+=======
+  
+  const link = getWishLink(wish);
+  if (link) {
+    openWishLink(link);
+>>>>>>> 5a235de (✨ (wishes): add default url)
   }
+}
+
+function getWishLink(wish) {
+  if (wish.url && wish.url.trim()) {
+    return wish.url;
+  }
+
+  if (wish.name && wish.name.trim()) {
+    const searchQuery = encodeURIComponent(wish.name.trim());
+    return `https://www.google.com/search?q=${searchQuery}`;
+  }
+
+  return null;
 }
 
 function openWishLink(url) {
