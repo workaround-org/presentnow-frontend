@@ -92,15 +92,15 @@
                         block
                         class="claim-btn"
                         @click.stop="openClaimDialog(wish)"
-                    >
+                      >
                       <v-icon start>mdi-hand-heart</v-icon>
                       I'll get this!
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-col>
-            </v-row>
-
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-col>
+              </v-row>
+              
               <!-- Random Picker Button (only show if there are multiple unclaimed wishes) -->
               <div v-if="wishes.filter(w => !w.claimed).length > 1" class="text-center mt-6">
                 <v-btn
@@ -173,7 +173,7 @@
       </v-card>
     </v-dialog>
 
-    <!-- Random Picker Dialog -->
+    <!-- Random Wish Dialog -->
     <v-dialog v-model="randomPickerDialog" max-width="800" persistent>
       <v-card class="case-opening-card">
         <v-card-title class="text-center text-h4 font-weight-bold case-title">
@@ -205,13 +205,22 @@
           </div>
 
           <!-- Result Display -->
-          <div v-if="showResult" class="result-container">
+          <div
+            v-if="showResult"
+            class="result-container"
+            :class="{ 'result-clickable': Boolean(randomlySelectedWish?.url) }"
+            @click="handleResultClick"
+            :tabindex="randomlySelectedWish?.url ? 0 : undefined"
+            :role="randomlySelectedWish?.url ? 'link' : undefined"
+            @keydown.enter.prevent="handleResultClick"
+            @keydown.space.prevent="handleResultClick"
+          >
             <div>
               <h3 class="text-h4 font-weight-bold mb-4" :style="{ color: '#e46842' }">
                 {{ randomlySelectedWish?.name }}
               </h3>
               <div class="text-body-1 mb-4">
-                {{ randomlySelectedWish?.description }}
+                {{ selectedWishDescription }}
               </div>
               <div v-if="randomlySelectedWish?.claimed" class="text-h6 text-red mb-4">
                 ⚠️ This wish has already been claimed!
@@ -220,7 +229,7 @@
           </div>
 
           <!-- Instructions -->
-          <div v-if="!isSpinning && !showResult" class="text-center mb-4">
+          <div v-if="!isSpinning && !showResult" class="text-i center mb-4">
           </div>
         </v-card-text>
 
@@ -294,14 +303,12 @@ const wishes = ref([]);
 const loading = ref(true);
 const error = ref(null);
 
-// Claim dialog state
 const claimDialog = ref(false);
 const selectedWish = ref(null);
 const claimerName = ref('');
 const claiming = ref(false);
 const claimError = ref('');
 
-// Random picker state
 const randomPickerDialog = ref(false);
 const isSpinning = ref(false);
 const isPreparingSpin = ref(false);
@@ -312,7 +319,14 @@ const displayItems = ref([]);
 const caseItems = ref(null);
 const caseContainer = ref(null);
 
-// Session storage key for claimer name
+const selectedWishDescription = computed(() => {
+  const description = randomlySelectedWish.value?.description;
+  if (typeof description === 'string' && description.trim()) {
+    return description.trim();
+  }
+  return 'No description provided';
+});
+
 const CLAIMER_NAME_KEY = 'presentnow_claimer_name';
 
 function toHome() {
@@ -361,12 +375,10 @@ const isUrgent = computed(() => {
 });
 
 function handleWishClick(wish) {
-  // If wish is claimed, do nothing
   if (wish.claimed) {
     return;
   }
-  
-  // If wish has URL, open it
+
   if (wish.url) {
     openWishLink(wish.url);
   }
@@ -378,10 +390,16 @@ function openWishLink(url) {
   }
 }
 
+function handleResultClick() {
+  const url = randomlySelectedWish.value?.url;
+  if (url) {
+    openWishLink(url);
+  }
+}
+
 function openClaimDialog(wish) {
   selectedWish.value = wish;
-  
-  // Try to load saved claimer name from session storage
+
   const savedName = sessionStorage.getItem(CLAIMER_NAME_KEY);
   if (savedName) {
     claimerName.value = savedName;
@@ -410,14 +428,11 @@ async function claimWish() {
   claiming.value = true;
   try {
     const trimmedName = claimerName.value.trim();
-    
-    // Use the new claim endpoint
+
     const updatedPresent = await publicClaimPresent(selectedWish.value.id, trimmedName);
-    
-    // Save claimer name to session storage for future claims
+
     sessionStorage.setItem(CLAIMER_NAME_KEY, trimmedName);
-    
-    // Update the local wish object with the response data
+
     const wishIndex = wishes.value.findIndex(w => w.id === selectedWish.value.id);
     if (wishIndex !== -1) {
       wishes.value[wishIndex] = updatedPresent;
@@ -442,10 +457,9 @@ watch(wishListName, (newName) => {
 function openRandomPicker() {
   const unclaimedWishes = wishes.value.filter(w => !w.claimed);
   if (unclaimedWishes.length < 2) {
-    return; // Need at least 2 unclaimed wishes
+    return;
   }
-  
-  // Create display items (multiply wishes to create the spinning effect)
+
   createDisplayItems();
   randomPickerDialog.value = true;
   showResult.value = false;
@@ -453,6 +467,7 @@ function openRandomPicker() {
   isPreparingSpin.value = false;
   randomlySelectedWish.value = null;
   selectedIndex.value = -1;
+
 
   // Ensure case items start at initial position
   setTimeout(() => {
@@ -465,8 +480,7 @@ function openRandomPicker() {
 function createDisplayItems() {
   const unclaimedWishes = wishes.value.filter(w => !w.claimed);
   const items = [];
-  
-  // Repeat wishes multiple times to create the spinning carousel effect
+
   for (let i = 0; i < 20; i++) {
     items.push(...unclaimedWishes);
   }
@@ -498,14 +512,12 @@ async function startSpinning() {
     return;
   }
 
-  // Reset state prior to spin
   isPreparingSpin.value = false;
   isSpinning.value = true;
   showResult.value = false;
   randomlySelectedWish.value = null;
   selectedIndex.value = -1;
 
-  // Reset transform to ensure consistent animation
   itemsEl.style.transition = 'none';
   itemsEl.style.transform = 'translateX(0)';
   void itemsEl.offsetWidth; // Force reflow
@@ -514,7 +526,6 @@ async function startSpinning() {
   const totalItems = itemsEl.children.length;
   const uniqueCount = unclaimedWishes.length;
 
-  // Choose a target index that keeps several full loops before/after the selected wish
   const loopsBeforeSelection = 4;
   const loopsAfterSelection = 4;
   const minIndex = Math.min(totalItems - 1, uniqueCount * loopsBeforeSelection);
@@ -536,7 +547,7 @@ async function startSpinning() {
     itemsEl.style.transform = `translateX(-${finalTranslate}px)`;
   });
 
-  const spinDuration = getTransitionDurationMs(itemsEl) + 100; // add a small buffer
+  const spinDuration = getTransitionDurationMs(itemsEl) + 100;
 
   setTimeout(() => {
     selectedIndex.value = randomIndex;
@@ -582,34 +593,28 @@ function getTransitionDurationMs(element) {
 function claimRandomWish() {
   selectedWish.value = randomlySelectedWish.value;
 
-  // Try to load saved claimer name from session storage
   const savedName = sessionStorage.getItem(CLAIMER_NAME_KEY);
   if (savedName) {
     claimerName.value = savedName;
   }
-
+  
   closeRandomPicker();
   claimDialog.value = true;
 }
 
 function rollAgain() {
-  // Reset the result state and prepare for another spin
   showResult.value = false;
   randomlySelectedWish.value = null;
   selectedIndex.value = -1;
   isPreparingSpin.value = true;
 
-  // Reset the transform of case items
   if (caseItems.value) {
     caseItems.value.style.transform = 'translateX(0)';
   }
-  
-  // Recreate display items to ensure fresh randomization
+
   createDisplayItems();
-  
-  // Small delay for better UX
+
   setTimeout(() => {
-    // Auto-start the next spin for immediate gratification
     startSpinning();
   }, 300);
 }
@@ -624,7 +629,6 @@ function closeRandomPicker() {
     displayItems.value = [];
   isPreparingSpin.value = false;
 
-    // Reset the transform of case items
     if (caseItems.value) {
       caseItems.value.style.transform = 'translateX(0)';
     }
@@ -1064,7 +1068,6 @@ onMounted(async () => {
   }
 }
 
-/* Random Picker Button */
 .random-picker-btn {
   font-size: 1.1rem !important;
   padding: 12px 24px !important;
@@ -1078,33 +1081,33 @@ onMounted(async () => {
   box-shadow: 0 6px 20px rgba(228, 104, 66, 0.4) !important;
 }
 
-/* Case Opening Styles */
 .case-opening-card {
-  background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 50%, #1e1e1e 100%);
-  color: white;
+  background: linear-gradient(135deg, #fff7f2 0%, #ffffff 60%, #ffe9dd 100%);
+  color: #2d2d2d;
   border-radius: 16px !important;
   overflow: hidden;
 }
 
 .case-title {
-  background: linear-gradient(90deg, #e46842, #ff8c42);
-  color: white;
+  background: linear-gradient(90deg, rgba(228, 104, 66, 0.15), rgba(255, 140, 66, 0.18));
+  color: #e46842;
   padding: 20px;
+  border-bottom: 1px solid rgba(228, 104, 66, 0.2);
 }
 
 .case-content {
   padding: 20px;
+  background: #ffffff;
 }
 
 .case-container {
   position: relative;
   width: 100%;
   height: 200px;
-  background: linear-gradient(45deg, #2a2a2a, #3a3a3a);
+  background: #ffffff;
   border-radius: 12px;
   overflow: hidden;
-  border: 2px solid #e46842;
-  box-shadow: 0 0 20px rgba(228, 104, 66, 0.3);
+  border: 2px solid rgba(228, 104, 66, 0.25);
 }
 
 .case-frame {
@@ -1121,8 +1124,7 @@ onMounted(async () => {
   transform: translate(-50%, -50%);
   width: 4px;
   height: 80%;
-  background: linear-gradient(180deg, transparent, #e46842, transparent);
-  box-shadow: 0 0 10px #e46842;
+  background: linear-gradient(180deg, transparent, rgba(228, 104, 66, 0.85), transparent);
   z-index: 10;
   border-radius: 2px;
 }
@@ -1134,10 +1136,7 @@ onMounted(async () => {
   transition: transform 3s cubic-bezier(0.23, 1, 0.320, 1);
   gap: 10px;
   padding: 0 20px;
-}
-
-.case-items.spinning {
-  /* Animation will be handled by JavaScript for precise positioning */
+  background: #ffffff;
 }
 
 @keyframes spin {
@@ -1145,7 +1144,6 @@ onMounted(async () => {
     transform: translateX(0);
   }
   100% {
-    /* Final position will be set by JavaScript */
     transform: var(--final-transform, translateX(-2000px));
   }
 }
@@ -1161,36 +1159,35 @@ onMounted(async () => {
 .item-card {
   width: 100%;
   height: 100%;
-  background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+  background: linear-gradient(145deg, #ffffff, #ffece1);
   border-radius: 8px;
   padding: 12px;
-  border: 2px solid #555;
+  border: 1px solid rgba(228, 104, 66, 0.3);
   display: flex;
   flex-direction: column;
   justify-content: center;
   text-align: center;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .case-item.selected .item-card {
   transform: scale(1.05);
-  border: 3px solid #e46842 !important;
-  box-shadow: 0 0 15px rgba(228, 104, 66, 0.8) !important;
+  border: 2px solid #e46842 !important;
 }
 
 .item-name {
   font-size: 0.9rem;
   font-weight: bold;
-  color: #e46842;
+  color: #d3552f;
   margin-bottom: 8px;
   line-height: 1.2;
 }
 
 .item-description {
   font-size: 0.75rem;
-  color: #ccc;
+  color: #555;
   line-height: 1.3;
+  line-clamp: 3;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -1201,9 +1198,10 @@ onMounted(async () => {
   text-align: center;
   margin-top: 20px;
   padding: 20px;
-  background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+  background: linear-gradient(145deg, #ffffff, #ffece1);
   border-radius: 12px;
-  border: 2px solid #e46842;
+  border: 1px solid rgba(228, 104, 66, 0.3);
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .result-glow {
