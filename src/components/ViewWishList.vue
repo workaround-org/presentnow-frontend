@@ -101,7 +101,6 @@
                 </v-col>
               </v-row>
               
-              <!-- Random Picker Button (only show if there are multiple unclaimed wishes) -->
               <div v-if="wishes.filter(w => !w.claimed).length > 1" class="text-center mt-6">
                 <v-btn
                   color="#e46842"
@@ -114,7 +113,6 @@
                   Feeling Lucky?
                 </v-btn>
               </div>
-            </div>
           </v-card-text>
         </v-card>
       </div>
@@ -177,11 +175,10 @@
     <v-dialog v-model="randomPickerDialog" max-width="800" persistent>
       <v-card class="case-opening-card">
         <v-card-title class="text-center text-h4 font-weight-bold case-title">
-          <v-icon left color="#e46842" class="mr-2">mdi-package-variant</v-icon>
+          <v-icon color="white" class="mr-2">mdi-package-variant</v-icon>
         </v-card-title>
-
         <v-card-text class="case-content">
-          <!-- Spinning Animation Container -->
+          <!-- Spinning Animation -->
           <div class="case-container" ref="caseContainer">
             <div class="case-frame">
               <div class="case-selector"></div>
@@ -216,7 +213,7 @@
             @keydown.space.prevent="handleResultClick"
           >
             <div>
-              <h3 class="text-h4 font-weight-bold mb-4" :style="{ color: '#e46842' }">
+              <h3 class="text-h4 font-weight-bold mb-4" :style="{ color: 'rgb(228, 104, 66)' }">
                 {{ randomlySelectedWish?.name }}
               </h3>
               <div class="text-body-1 mb-4">
@@ -229,7 +226,7 @@
           </div>
 
           <!-- Instructions -->
-          <div v-if="!isSpinning && !showResult" class="text-i center mb-4">
+          <div v-if="!isSpinning && !showResult" class="text-center mb-4">
           </div>
         </v-card-text>
 
@@ -1082,28 +1079,26 @@ onMounted(async () => {
 }
 
 .case-opening-card {
-  background: linear-gradient(135deg, #fff7f2 0%, #ffffff 60%, #ffe9dd 100%);
+  background: white;
   color: #2d2d2d;
   border-radius: 16px !important;
   overflow: hidden;
 }
 
 .case-title {
-  background: linear-gradient(90deg, rgba(228, 104, 66, 0.15), rgba(255, 140, 66, 0.18));
-  color: #e46842;
+  background: rgb(228, 104, 66);
+  color: white;
   padding: 20px;
   border-bottom: 1px solid rgba(228, 104, 66, 0.2);
 }
 
 .case-content {
   padding: 20px;
-  background: #ffffff;
+  background: white;
 }
 
 .case-container {
   position: relative;
-  width: 100%;
-  height: 200px;
   background: #ffffff;
   border-radius: 12px;
   overflow: hidden;
@@ -1159,7 +1154,7 @@ onMounted(async () => {
 .item-card {
   width: 100%;
   height: 100%;
-  background: linear-gradient(145deg, #ffffff, #ffece1);
+  background: white;
   border-radius: 8px;
   padding: 12px;
   border: 1px solid rgba(228, 104, 66, 0.3);
@@ -1172,13 +1167,13 @@ onMounted(async () => {
 
 .case-item.selected .item-card {
   transform: scale(1.05);
-  border: 2px solid #e46842 !important;
+  border: 2px solid rgb(228, 104, 66) !important;
 }
 
 .item-name {
   font-size: 0.9rem;
   font-weight: bold;
-  color: #d3552f;
+  color: rgb(228, 104, 66);
   margin-bottom: 8px;
   line-height: 1.2;
 }
@@ -1187,7 +1182,6 @@ onMounted(async () => {
   font-size: 0.75rem;
   color: #555;
   line-height: 1.3;
-  line-clamp: 3;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -1198,10 +1192,25 @@ onMounted(async () => {
   text-align: center;
   margin-top: 20px;
   padding: 20px;
-  background: linear-gradient(145deg, #ffffff, #ffece1);
+  background: white;
   border-radius: 12px;
   border: 1px solid rgba(228, 104, 66, 0.3);
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: all 0.3s ease;
+}
+
+.result-clickable {
+  cursor: pointer;
+}
+
+.result-clickable:hover {
+  transform: translateY(-4px);
+  background: #fafafa;
+  border-color: rgba(228, 104, 66, 0.6);
+  box-shadow: 0 8px 16px rgba(228, 104, 66, 0.2);
+}
+
+.result-clickable:active {
+  transform: translateY(-2px);
 }
 
 .result-glow {
@@ -1218,11 +1227,11 @@ onMounted(async () => {
 }
 
 .spin-btn {
-
   padding: 5px 12px !important;
   font-size: 1.2rem !important;
   border-radius: 12px !important;
-  background: linear-gradient(45deg, #e46842, #ff8c42) !important;
+  background: rgb(228, 104, 66) !important;
+  color: white !important;
   box-shadow: 0 4px 15px rgba(228, 104, 66, 0.4) !important;
   transition: all 0.3s ease !important;
 }
@@ -1232,3 +1241,4 @@ onMounted(async () => {
   box-shadow: 0 6px 25px rgba(228, 104, 66, 0.6) !important;
 }
 </style>
+
