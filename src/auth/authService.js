@@ -26,7 +26,7 @@ class AuthService {
       silent_redirect_uri: `${window.location.origin}/silent-renew.html`,
       // Add audience parameter
       extraQueryParams: {
-        audience: "https://workaround-org.eu.auth0.com/api/v2/"
+        audience: config.audience
       }
     };
 
@@ -129,6 +129,16 @@ class AuthService {
   async renewToken() {
     await this.ensureInitialized();
     return this.userManager.signinSilent();
+  }
+
+  async getSearchEngine() {
+    await this.ensureInitialized();
+    return this.config?.searchEngine;
+  }
+
+  async getConfig() {
+    await this.ensureInitialized();
+    return this.config;
   }
 }
 
