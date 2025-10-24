@@ -106,10 +106,10 @@
                   color="#e46842"
                   variant="elevated"
                   size="large"
-                  prepend-icon="mdi-dice-6"
                   @click="openRandomPicker"
                   class="random-picker-btn"
                 >
+                  <v-icon class="mr-2">mdi-dice-6</v-icon>
                   Feeling Lucky?
                 </v-btn>
               </div>
@@ -221,6 +221,10 @@
               </div>
               <div v-if="randomlySelectedWish?.claimed" class="text-h6 text-red mb-4">
                 ⚠️ This wish has already been claimed!
+              </div>
+              <div v-if="randomlySelectedWish?.url && !randomlySelectedWish?.claimed" class="result-link-hint">
+                <v-icon color="#2196f3" class="mr-1">mdi-link-variant</v-icon>
+                Click to open link
               </div>
             </div>
           </div>
@@ -1211,6 +1215,16 @@ onMounted(async () => {
 
 .result-clickable:active {
   transform: translateY(-2px);
+}
+
+.result-link-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2196f3;
+  font-size: 0.9rem;
+  margin-top: 8px;
+  font-weight: 500;
 }
 
 .result-glow {
