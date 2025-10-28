@@ -1,11 +1,17 @@
-import { UserManager, WebStorageStateStore } from 'oidc-client-ts';
+import { UserManager, WebStorageStateStore, User } from 'oidc-client-ts';
+
+interface FrontendConfig {
+  authServerUrl: string;
+  authClientId: string;
+  audience: string;
+  adminRole: string;
+  searchEngine: string;
+}
 
 class AuthService {
-  constructor() {
-    this.userManager = null;
-    this.config = null;
-    this.initialized = false;
-  }
+  private userManager: UserManager | null = null;
+  private config: FrontendConfig | null = null;
+  private initialized = false;
 
   async initialize() {
     if (this.initialized) return;
@@ -34,7 +40,7 @@ class AuthService {
     this.initialized = true;
 
     // Setup events
-    this.userManager.events.addUserLoaded((user) => {
+    this.userManager.events.addUserLoaded((user: User) => {
       console.log('User loaded:', user.profile);
     });
 
@@ -51,12 +57,12 @@ class AuthService {
       this.login();
     });
 
-    this.userManager.events.addSilentRenewError((error) => {
+    this.userManager.events.addSilentRenewError((error: Error) => {
       console.error('Silent renew error:', error);
     });
   }
 
-  async fetchConfig() {
+  async fetchConfig(): Promise<FrontendConfig> {
     const runtimeHost = window.location.hostname;
     const runtimeFullHost = window.location.host;
     const apiBase = runtimeHost === 'localhost'
@@ -72,13 +78,13 @@ class AuthService {
 
   async login() {
     await this.ensureInitialized();
-    return this.userManager.signinRedirect();
+    return this.userManager!.signinRedirect();
   }
 
-  async handleCallback() {
+  async handleCallback(): Promise<User> {
     await this.ensureInitialized();
     try {
-      const user = await this.userManager.signinRedirectCallback();
+      const user = await this.userManager!.signinRedirectCallback();
       return user;
     } catch (error) {
       console.error('Error handling callback:', error);
@@ -88,15 +94,15 @@ class AuthService {
 
   async logout() {
     await this.ensureInitialized();
-    return this.userManager.signoutRedirect();
+    return this.userManager!.signoutRedirect();
   }
 
-  async getUser() {
+  async getUser(): Promise<User | null> {
     await this.ensureInitialized();
-    return this.userManager.getUser();
+    return this.userManager!.getUser();
   }
 
-  async getAccessToken() {
+  async getAccessToken(): Promise<string | undefined> {
     const user = await this.getUser();
     return user?.access_token;
   }
@@ -106,7 +112,7 @@ class AuthService {
     return user != null && !user.expired;
   }
 
-  async hasRole(role) {
+  async hasRole(role: string): Promise<boolean> {
     const user = await this.getUser();
     if (!user) return false;
     
@@ -128,15 +134,15 @@ class AuthService {
 
   async renewToken() {
     await this.ensureInitialized();
-    return this.userManager.signinSilent();
+    return this.userManager!.signinSilent();
   }
 
-  async getSearchEngine() {
+  async getSearchEngine(): Promise<string | undefined> {
     await this.ensureInitialized();
     return this.config?.searchEngine;
   }
 
-  async getConfig() {
+  async getConfig(): Promise<FrontendConfig | null> {
     await this.ensureInitialized();
     return this.config;
   }

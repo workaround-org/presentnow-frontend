@@ -1,8 +1,9 @@
 import { ref, onMounted } from 'vue'
-import authService from '@/auth/authService.js'
+import authService from '@/auth/authService'
+import { User } from 'oidc-client-ts'
 
 export function useAuth() {
-  const user = ref(null)
+  const user = ref<User | null>(null)
   const isAuthenticated = ref(false)
   const isLoading = ref(true)
   const isAdmin = ref(false)

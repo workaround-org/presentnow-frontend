@@ -292,9 +292,9 @@
 import '@fontsource/poppins';
 import { onMounted, ref, computed, nextTick, watch } from "vue";
 import { useRoute, useRouter } from 'vue-router';
-import { getPublicWishList, publicClaimPresent } from '@/api/client.js';
+import { getPublicWishList, publicClaimPresent } from '@/api/client';
 import presentNowIcon from '@/assets/images/presentnow-icon.png';
-import authService from '@/auth/authService.js';
+import authService from '@/auth/authService';
 
 const route = useRoute();
 const router = useRouter();

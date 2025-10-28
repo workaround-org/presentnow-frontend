@@ -159,8 +159,8 @@
 <script setup>
 import {ref, watch} from 'vue'
 import {useRoute} from 'vue-router'
-import {deletePresent, savePresent, updatePresent, unclaimPresent} from '@/api/client.js'
-import authService from '@/auth/authService.js'
+import {deletePresent, savePresent, updatePresent, unclaimPresent} from '@/api/client'
+import authService from '@/auth/authService'
 
 // Accept props from parent so loaded wishes show their data
 const props = defineProps({

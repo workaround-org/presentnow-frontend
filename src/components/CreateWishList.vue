@@ -128,7 +128,7 @@ import {onMounted, ref} from "vue";
 import WishListCode from "@/components/WishListCode.vue";
 import {VDateInput} from 'vuetify/labs/VDateInput'
 import {useRoute, useRouter} from 'vue-router'
-import {getPublicWishList} from '@/api/client.js'
+import {getPublicWishList} from '@/api/client'
 import presentNowIcon from '@/assets/images/presentnow-icon.png'
 
 const route = useRoute()

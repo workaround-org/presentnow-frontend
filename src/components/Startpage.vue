@@ -88,8 +88,8 @@ import '@fontsource/poppins';
 import {useRouter} from 'vue-router';
 import {ref, onMounted, computed} from "vue";
 import CreateWishListDialog from "@/components/CreateWishListDialog.vue";
-import authService from '@/auth/authService.js';
-import { getPublicWishList } from '@/api/client.js';
+import authService from '@/auth/authService';
+import { getPublicWishList } from '@/api/client';
 import { useDisplay } from 'vuetify';
 
 const { mobile } = useDisplay();

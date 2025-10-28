@@ -55,7 +55,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import authService from '@/auth/authService.js'
+import authService from '@/auth/authService'
 
 const router = useRouter()
 const message = ref('Processing authentication...')

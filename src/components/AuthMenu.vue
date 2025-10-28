@@ -40,7 +40,7 @@
 </template>
 
 <script setup>
-import { useAuth } from '@/composables/useAuth.js'
+import { useAuth } from '@/composables/useAuth'
 
 const { user, isAuthenticated, isLoading, isAdmin, login, logout } = useAuth()
 </script>

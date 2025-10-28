@@ -55,7 +55,7 @@
 <script setup>
 import {useRouter} from "vue-router";
 import {ref, watch} from "vue";
-import {saveWishList} from '@/api/client.js'
+import {saveWishList} from '@/api/client'
 
 const props = defineProps({
   modelValue: Boolean

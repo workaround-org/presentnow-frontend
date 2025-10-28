@@ -53,7 +53,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import authService from '@/auth/authService.js'
+import authService from '@/auth/authService'
 
 const props = defineProps({
   modelValue: Boolean,
