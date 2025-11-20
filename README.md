@@ -186,4 +186,6 @@ This project is free and open-source software (FOSS). See [LICENSE](./LICENSE) f
 
 ## Support
 
+:)
+
 If you encounter any issues or have questions, please [open an issue](https://github.com/workaround-org/presentnow-frontend/issues) on GitHub.
