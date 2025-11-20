@@ -1,5 +1,13 @@
 # PresentNow Frontend
 
+[![Build and Push Docker Image](https://github.com/workaround-org/presentnow-frontend/actions/workflows/build-and-push.yml/badge.svg)](https://github.com/workaround-org/presentnow-frontend/actions/workflows/build-and-push.yml)
+[![Vue.js](https://img.shields.io/badge/Vue.js-3.5-4FC08D?logo=vue.js&logoColor=white)](https://vuejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-6.4-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Vuetify](https://img.shields.io/badge/Vuetify-3.10-1867C0?logo=vuetify&logoColor=white)](https://vuetifyjs.com/)
+[![Docker](https://img.shields.io/badge/Docker-enabled-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![pnpm](https://img.shields.io/badge/pnpm-package%20manager-F69220?logo=pnpm&logoColor=white)](https://pnpm.io/)
+
 **PresentNow** is an open-source web application that helps people collaboratively organize and manage gift-giving for occasions like birthdays. This repository contains the Vue.js frontend that provides an intuitive interface for creating wish lists, suggesting presents, and coordinating gift purchases while preserving the element of surprise.
 
 ## Features
