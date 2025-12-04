@@ -15,6 +15,23 @@
           class="main-card mx-auto pa-6 elevation-8"
           max-width="450"
       >
+        <div class="card-section" v-if="isAuthenticated">
+          <h2 class="section-title">My Account</h2>
+          <v-btn
+              @click="goToMyWishlists"
+              class="action-btn my-wishlists-btn"
+              color="#e46842"
+              size="large"
+              block
+              elevation="2"
+          >
+            <v-icon left>mdi-format-list-bulleted</v-icon>
+            View My Wishlists
+          </v-btn>
+        </div>
+        
+        <v-divider class="my-6" v-if="isAuthenticated"></v-divider>
+        
         <div class="card-section">
           <h2 class="section-title">Enter Wishlist</h2>
           <v-text-field
@@ -98,12 +115,17 @@ const isMobile = computed(() => mobile.value);
 const router = useRouter();
 const showWishListDialog = ref(false);
 const checkingAuth = ref(true);
+const isAuthenticated = ref(false);
 const wishlistCode = ref('');
 const loading = ref(false);
 const errorMessage = ref('');
 
 function routeToCreateWishList() {
   router.push('/create');
+}
+
+function goToMyWishlists() {
+  router.push('/wishlists');
 }
 
 async function enterWishlist() {
@@ -138,8 +160,9 @@ async function enterWishlist() {
 onMounted(async () => {
   checkingAuth.value = true;
   try {
-    const isAuthenticated = await authService.isAuthenticated();
-    if (!isAuthenticated) {
+    const authenticated = await authService.isAuthenticated();
+    isAuthenticated.value = authenticated;
+    if (!authenticated) {
       console.log('User not authenticated, starting login process...');
       await authService.login();
     }
@@ -242,6 +265,10 @@ onMounted(async () => {
 }
 
 .create-btn {
+  background: linear-gradient(135deg, #e46842 0%, #d94d27 100%) !important;
+}
+
+.my-wishlists-btn {
   background: linear-gradient(135deg, #e46842 0%, #d94d27 100%) !important;
 }
 

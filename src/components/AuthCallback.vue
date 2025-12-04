@@ -67,7 +67,7 @@ onMounted(async () => {
     await authService.handleCallback()
     statusState.value = 'success'
     message.value = 'Authentication successful!'
-    subtitle.value = 'Redirecting you to the app...'
+    subtitle.value = 'Redirecting you to the home page...'
     
     setTimeout(() => {
       router.push('/')
