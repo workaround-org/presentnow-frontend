@@ -128,7 +128,7 @@
                     @click.stop="viewWishlist(wishlist.id)"
                   >
                     <v-icon left>mdi-eye</v-icon>
-                    View
+                    Edit
                   </v-btn>
                   <v-spacer></v-spacer>
                   <v-btn
@@ -220,7 +220,7 @@ async function loadWishlists() {
 }
 
 function viewWishlist(id) {
-  router.push(`/wishlist/${id}`)
+  router.push(`/create/${id}`)
 }
 
 function getItemCount(wishlist) {
