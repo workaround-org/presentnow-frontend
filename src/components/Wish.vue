@@ -3,7 +3,7 @@
     <div v-if="claimed" class="claimed-banner">
       <v-chip color="success" size="small" class="claimed-chip">
         <v-icon size="small" start>mdi-check-circle</v-icon>
-        Claimed by {{ claimerName }}
+        Claimed
       </v-chip>
     </div>
     
