@@ -249,6 +249,8 @@ onMounted(async () => {
   font-weight: 700;
   margin-bottom: 1rem;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  user-select: none;
+  cursor: default;
 }
 
 .success-message {
@@ -259,6 +261,8 @@ onMounted(async () => {
   font-size: 1.2rem;
   font-weight: 600;
   color: #4caf50;
+  user-select: none;
+  cursor: default;
 }
 
 .cards-container {
@@ -288,6 +292,8 @@ onMounted(async () => {
   color: #333;
   padding: 1.5rem;
   border-bottom: 2px solid #f0f0f0;
+  user-select: none;
+  cursor: default;
 }
 
 .link-field {

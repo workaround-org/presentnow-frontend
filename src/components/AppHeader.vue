@@ -7,7 +7,7 @@
           :width="40"
           :src="presentNowIcon"
         ></v-img>
-        <v-toolbar-title class="ml-3 text-white font-weight-bold">
+        <v-toolbar-title class="ml-3 text-white font-weight-bold title-text">
           presentnow
         </v-toolbar-title>
       </div>
@@ -50,5 +50,10 @@ function goToHome() {
 
 .logo-container:hover {
   opacity: 0.9;
+}
+
+.title-text {
+  user-select: none;
+  cursor: pointer;
 }
 </style>
