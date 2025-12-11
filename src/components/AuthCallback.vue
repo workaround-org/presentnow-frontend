@@ -10,7 +10,7 @@
                 <v-img
                   class="mx-auto mb-6 logo-img"
                   :width="100"
-                  src="src/assets/images/presentnow-icon.png"
+                  :src="presentNowIcon"
                 ></v-img>
 
                 <!-- Loading State -->
@@ -56,6 +56,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import authService from '@/auth/authService'
+import presentNowIcon from '@/assets/images/presentnow-icon.png'
 
 const router = useRouter()
 const message = ref('Processing authentication...')

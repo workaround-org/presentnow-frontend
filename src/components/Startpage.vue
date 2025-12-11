@@ -5,7 +5,7 @@
         <v-img
             class="mx-auto logo-img"
             :width="isMobile ? 150 : 200"
-            src="src/assets/images/presentnow-icon.png"
+            :src="presentNowIcon"
         ></v-img>
         <h1 class="app-title">presentnow</h1>
         <p class="app-subtitle">Your wishlist, beautifully shared</p>
@@ -108,6 +108,7 @@ import CreateWishListDialog from "@/components/CreateWishListDialog.vue";
 import authService from '@/auth/authService';
 import { getPublicWishList } from '@/api/client';
 import { useDisplay } from 'vuetify';
+import presentNowIcon from '@/assets/images/presentnow-icon.png';
 
 const { mobile } = useDisplay();
 const isMobile = computed(() => mobile.value);

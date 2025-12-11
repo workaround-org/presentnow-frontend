@@ -1,9 +1,6 @@
 <template>
   <div class="bg-image">
-    <div class="header-nav" @click="toHome">
-      <v-img class="logo-small" :width="80" :src="presentNowIcon"></v-img>
-      <h3 class="logo-text">presentnow</h3>
-    </div>
+    <AppHeader />
     
     <div class="main-content">
       <div class="page-header">
@@ -126,10 +123,10 @@ import '@fontsource/poppins';
 import Wish from "@/components/Wish.vue";
 import {onMounted, ref} from "vue";
 import WishListCode from "@/components/WishListCode.vue";
+import AppHeader from "@/components/AppHeader.vue";
 import {VDateInput} from 'vuetify/labs/VDateInput'
 import {useRoute, useRouter} from 'vue-router'
 import {getPublicWishList} from '@/api/client'
-import presentNowIcon from '@/assets/images/presentnow-icon.png'
 
 const route = useRoute()
 const router = useRouter()
@@ -196,10 +193,6 @@ function copyToClipboard() {
   });
 }
 
-function toHome() {
-  router.push('/')
-}
-
 onMounted(async () => {
   loading.value = true
   try {
@@ -238,34 +231,10 @@ onMounted(async () => {
   padding: 2rem 1rem;
 }
 
-.header-nav {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-  margin-bottom: 2rem;
-  width: fit-content;
-}
-
-.header-nav:hover {
-  transform: scale(1.05);
-}
-
-.logo-small {
-  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2));
-}
-
-.logo-text {
-  color: #e46842;
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0;
-}
-
 .main-content {
   max-width: 1200px;
   margin: 0 auto;
+  padding-top: 80px;
 }
 
 .page-header {

@@ -1,19 +1,6 @@
 <template>
   <div class="bg-image">
-    <v-app-bar color="#e46842" elevation="4" class="app-bar">
-      <v-container class="d-flex align-center px-4">
-        <v-img
-          class="logo-img"
-          :width="40"
-          src="src/assets/images/presentnow-icon.png"
-        ></v-img>
-        <v-toolbar-title class="ml-3 text-white font-weight-bold">
-          presentnow
-        </v-toolbar-title>
-        <v-spacer></v-spacer>
-        <AuthMenu />
-      </v-container>
-    </v-app-bar>
+    <AppHeader />
 
     <v-main>
       <v-container class="py-8">
@@ -188,7 +175,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getWishLists, deleteWishList } from '@/api/client'
 import CreateWishListDialog from '@/components/CreateWishListDialog.vue'
-import AuthMenu from '@/components/AuthMenu.vue'
+import AppHeader from '@/components/AppHeader.vue'
 import authService from '@/auth/authService'
 
 const router = useRouter()
@@ -276,14 +263,6 @@ onMounted(async () => {
   background-attachment: fixed;
   min-height: 100vh;
   width: 100%;
-}
-
-.app-bar {
-  backdrop-filter: blur(10px);
-}
-
-.logo-img {
-  border-radius: 8px;
 }
 
 .content-wrapper {
