@@ -25,21 +25,8 @@
           <h1 class="wishlist-name">{{ wishListName }}</h1>
         </div>
         
-        <!-- Deadline Section -->
-        <v-card v-if="deadline" class="deadline-card elevation-4 mx-auto mb-6">
-          <v-card-title class="card-title-centered">
-            <v-icon color="#e46842" size="large" class="mr-2">mdi-calendar-clock</v-icon>
-            Time Remaining
-          </v-card-title>
-          <v-card-text class="text-center pb-4">
-            <div class="deadline-date">{{ formatDeadline(deadline) }}</div>
-            <div class="time-remaining" :class="{ 'time-urgent': isUrgent }">
-              {{ timeRemaining }}
-            </div>
-          </v-card-text>
-        </v-card>
+        <DeadlineCard :deadline="deadline" />
 
-        <!-- Wishes Section -->
         <v-card class="wishes-card elevation-4 mx-auto">
           <v-card-title class="card-title-centered">
             <v-icon color="#e46842" size="large" class="mr-2">mdi-gift</v-icon>
@@ -52,249 +39,56 @@
             </div>
             <v-row v-else>
               <v-col v-for="wish in wishes" :key="wish.id" cols="12" sm="6" md="4">
-                <v-card
-                    class="wish-card"
-                    :class="{
-                    'wish-card-clickable': wish.url && !wish.claimed,
-                    'wish-card-claimed': wish.claimed
-                  }"
-                    elevation="3"
-                    @click="handleWishClick(wish)"
-                >
-                  <div class="wish-card-header">
-                    <v-chip v-if="wish.claimed" color="success" size="small" class="claimed-chip">
-                      <v-icon size="small" start>mdi-check</v-icon>
-                      Claimed
-                    </v-chip>
-                    <v-icon v-else-if="wish.url" size="small" color="#2196f3" class="link-icon">
-                      mdi-link-variant
-                    </v-icon>
-                  </div>
-
-                  <v-card-title class="wish-title">
-                    {{ wish.name || 'Unnamed Wish' }}
-                  </v-card-title>
-
-                  <v-card-text class="wish-description">
-                    <div v-if="wish.description" class="description-text">
-                      {{ wish.description }}
-                    </div>
-                    <div v-if="wish.claimed && wish.claimerName" class="claimer-info">
-                      <v-icon size="small" class="mr-1">mdi-account</v-icon>
-                      Claimed by {{ wish.claimerName }}
-                    </div>
-                  </v-card-text>
-
-                  <v-card-actions v-if="!wish.claimed" class="wish-actions">
-                    <v-btn
-                        color="#e46842"
-                        variant="elevated"
-                        block
-                        class="claim-btn"
-                        @click.stop="openClaimDialog(wish)"
-                      >
-                      <v-icon start>mdi-hand-heart</v-icon>
-                      I'll get this!
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-col>
-              </v-row>
-              
-              <div v-if="wishes.filter(w => !w.claimed).length > 1" class="text-center mt-6">
-                <v-btn
-                  color="#e46842"
-                  variant="elevated"
-                  size="large"
-                  @click="openRandomPicker"
-                  class="random-picker-btn"
-                >
-                  <v-icon class="mr-2">mdi-dice-6</v-icon>
-                  Feeling Lucky?
-                </v-btn>
-              </div>
+                <WishCard
+                  :wish="wish"
+                  @click="handleWishClick"
+                  @claim="openClaimDialog"
+                />
+              </v-col>
+            </v-row>
+            
+            <div v-if="wishes.filter(w => !w.claimed).length > 1" class="text-center mt-6">
+              <v-btn
+                color="#e46842"
+                variant="elevated"
+                size="large"
+                @click="openRandomPicker"
+                class="random-picker-btn"
+              >
+                <v-icon class="mr-2">mdi-dice-6</v-icon>
+                Feeling Lucky?
+              </v-btn>
+            </div>
           </v-card-text>
         </v-card>
       </div>
     </div>
 
-    <!-- Claim Dialog -->
-    <v-dialog v-model="claimDialog" max-width="500" persistent>
-      <v-card class="claim-dialog-card">
-        <v-card-title class="claim-dialog-header">
-          <v-icon left color="white" size="large">mdi-hand-heart</v-icon>
-          <span>Claim This Wish</span>
-        </v-card-title>
-        <v-card-text class="claim-dialog-content">
-          <div class="claim-wish-name">
-            <v-icon color="#e46842" class="mr-2">mdi-gift</v-icon>
-            {{ selectedWish?.name }}
-          </div>
-          <p class="claim-instruction">Enter your name to let others know you'll get this gift:</p>
-          <v-text-field
-            v-model="claimerName"
-            variant="outlined"
-            placeholder="Your name"
-            maxlength="100"
-            :error-messages="claimError"
-            @input="claimError = ''"
-            color="#e46842"
-            density="comfortable"
-            autofocus
-          >
-            <template v-slot:prepend-inner>
-              <v-icon color="#e46842">mdi-account</v-icon>
-            </template>
-          </v-text-field>
-        </v-card-text>
-        <v-card-actions class="claim-dialog-actions">
-          <v-btn 
-            color="grey" 
-            variant="text"
-            @click="closeClaimDialog"
-            :disabled="claiming"
-          >
-            Cancel
-          </v-btn>
-          <v-btn 
-            color="#e46842" 
-            variant="elevated"
-            :loading="claiming"
-            :disabled="claiming || !claimerName.trim()"
-            @click="claimWish"
-            class="claim-submit-btn"
-          >
-            <v-icon start>mdi-check-circle</v-icon>
-            Claim Gift
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <ClaimDialog
+      v-model="claimDialog"
+      :wish="selectedWish"
+      @claim="handleClaimWish"
+    />
 
-    <!-- Random Wish Dialog -->
-    <v-dialog v-model="randomPickerDialog" max-width="800" persistent>
-      <v-card class="case-opening-card">
-        <v-card-title class="text-center text-h4 font-weight-bold case-title">
-          <v-icon color="white" class="mr-2">mdi-package-variant</v-icon>
-        </v-card-title>
-        <v-card-text class="case-content">
-          <!-- Spinning Animation -->
-          <div class="case-container" ref="caseContainer">
-            <div class="case-frame">
-              <div class="case-selector"></div>
-              <div class="case-items" ref="caseItems" :class="{ 'spinning': isSpinning }">
-                <div
-                  v-for="(item, index) in displayItems"
-                  :key="`item-${index}`"
-                  class="case-item"
-                  :class="{ 'selected': selectedIndex === index }"
-                >
-                  <div class="item-card">
-                    <div class="item-name">{{ item.name || 'Unnamed Wish' }}</div>
-                    <div class="item-description">{{ item.description || 'No description' }}</div>
-                    <v-chip v-if="item.claimed" color="error" size="small" class="mt-2">
-                      Claimed
-                    </v-chip>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Result Display -->
-          <div
-            v-if="showResult"
-            class="result-container"
-            :class="{ 'result-clickable': Boolean(randomlySelectedWish?.url) }"
-            @click="handleResultClick"
-            :tabindex="randomlySelectedWish?.url ? 0 : undefined"
-            :role="randomlySelectedWish?.url ? 'link' : undefined"
-            @keydown.enter.prevent="handleResultClick"
-            @keydown.space.prevent="handleResultClick"
-          >
-            <div>
-              <h3 class="text-h4 font-weight-bold mb-4" :style="{ color: 'rgb(228, 104, 66)' }">
-                {{ randomlySelectedWish?.name }}
-              </h3>
-              <div class="text-body-1 mb-4">
-                {{ selectedWishDescription }}
-              </div>
-              <div v-if="randomlySelectedWish?.claimed" class="text-h6 text-red mb-4">
-                ⚠️ This wish has already been claimed!
-              </div>
-              <div v-if="randomlySelectedWish?.url && !randomlySelectedWish?.claimed" class="result-link-hint">
-                <v-icon color="#2196f3" class="mr-1">mdi-link-variant</v-icon>
-                Click to open link
-              </div>
-            </div>
-          </div>
-
-          <!-- Instructions -->
-          <div v-if="!isSpinning && !showResult" class="text-center mb-4">
-          </div>
-        </v-card-text>
-
-        <v-card-actions class="justify-center pb-4">
-          <div v-if="!isSpinning && !showResult && !isPreparingSpin" class="text-center">
-            <v-btn 
-              color="#e46842" 
-              variant="elevated"
-              size="large"
-              @click="startSpinning"
-              class="spin-btn mr-3"
-            >
-              <v-icon class="mr-2">mdi-play</v-icon>
-              Spin
-            </v-btn>
-            <v-btn 
-              color="grey" 
-              variant="text"
-              size="large"
-              @click="closeRandomPicker"
-            >
-              Cancel
-            </v-btn>
-          </div>
-          <div v-else-if="showResult" class="text-center">
-            <v-btn 
-              v-if="!randomlySelectedWish?.claimed"
-              color="#e46842" 
-              variant="elevated"
-              class="mr-3"
-              @click="claimRandomWish"
-            >
-              Claim This Wish!
-            </v-btn>
-            <v-btn 
-              color="#4CAF50" 
-              variant="elevated"
-              class="mr-3"
-              prepend-icon="mdi-dice-6"
-              @click="rollAgain"
-            >
-              Roll Again!
-            </v-btn>
-            <v-btn 
-              color="grey" 
-              variant="text"
-              @click="closeRandomPicker"
-            >
-              {{ randomlySelectedWish?.claimed ? 'Close' : 'Cancel' }}
-            </v-btn>
-          </div>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <RandomPickerDialog
+      v-model="randomPickerDialog"
+      :wishes="wishes"
+      @claim="handleClaimRandomWish"
+    />
   </div>
 </template>
 
 <script setup>
 import '@fontsource/poppins';
-import { onMounted, ref, computed, nextTick, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from 'vue-router';
 import { getPublicWishList, publicClaimPresent } from '@/api/client';
 import presentNowIcon from '@/assets/images/presentnow-icon.png';
 import authService from '@/auth/authService';
+import DeadlineCard from './wishlist/DeadlineCard.vue';
+import WishCard from './wishlist/WishCard.vue';
+import ClaimDialog from './wishlist/ClaimDialog.vue';
+import RandomPickerDialog from './wishlist/RandomPickerDialog.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -307,74 +101,11 @@ const error = ref(null);
 
 const claimDialog = ref(false);
 const selectedWish = ref(null);
-const claimerName = ref('');
-const claiming = ref(false);
-const claimError = ref('');
-
 const randomPickerDialog = ref(false);
-const isSpinning = ref(false);
-const isPreparingSpin = ref(false);
-const showResult = ref(false);
-const randomlySelectedWish = ref(null);
-const selectedIndex = ref(-1);
-const displayItems = ref([]);
-const caseItems = ref(null);
-const caseContainer = ref(null);
-
-const selectedWishDescription = computed(() => {
-  const description = randomlySelectedWish.value?.description;
-  if (typeof description === 'string' && description.trim()) {
-    return description.trim();
-  }
-  return 'No description provided';
-});
-
-const CLAIMER_NAME_KEY = 'presentnow_claimer_name';
 
 function toHome() {
   router.push('/');
 }
-
-function formatDeadline(date) {
-  return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-}
-
-const timeRemaining = computed(() => {
-  if (!deadline.value) return '';
-  
-  const now = new Date();
-  const end = new Date(deadline.value);
-  const diff = end - now;
-  
-  if (diff <= 0) {
-    return 'Expired';
-  }
-  
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  
-  if (days > 0) {
-    return `${days} day${days !== 1 ? 's' : ''} ${hours} hour${hours !== 1 ? 's' : ''}`;
-  } else if (hours > 0) {
-    return `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`;
-  } else {
-    return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
-  }
-});
-
-const isUrgent = computed(() => {
-  if (!deadline.value) return false;
-  const now = new Date();
-  const end = new Date(deadline.value);
-  const diff = end - now;
-  const daysRemaining = diff / (1000 * 60 * 60 * 24);
-  return daysRemaining <= 7 && daysRemaining > 0;
-});
 
 async function handleWishClick(wish) {
   if (wish.claimed) {
@@ -407,63 +138,33 @@ function openWishLink(url) {
   }
 }
 
-async function handleResultClick() {
-  const wish = randomlySelectedWish.value;
-  if (!wish) return;
-  
-  const link = await getWishLink(wish);
-  if (link) {
-    openWishLink(link);
-  }
-}
-
 function openClaimDialog(wish) {
   selectedWish.value = wish;
-
-  const savedName = sessionStorage.getItem(CLAIMER_NAME_KEY);
-  if (savedName) {
-    claimerName.value = savedName;
-  }
-  
   claimDialog.value = true;
 }
 
-function closeClaimDialog() {
-  claimDialog.value = false;
-  selectedWish.value = null;
-  claimError.value = '';
-}
-
-async function claimWish() {
-  if (!claimerName.value.trim()) {
-    claimError.value = 'Please enter your name';
-    return;
-  }
-  
-  if (!selectedWish.value) {
-    claimError.value = 'No wish selected';
-    return;
-  }
-  
-  claiming.value = true;
+async function handleClaimWish({ wish, claimerName }) {
   try {
-    const trimmedName = claimerName.value.trim();
-
-    const updatedPresent = await publicClaimPresent(selectedWish.value.id, trimmedName);
-
-    sessionStorage.setItem(CLAIMER_NAME_KEY, trimmedName);
-
-    const wishIndex = wishes.value.findIndex(w => w.id === selectedWish.value.id);
+    const updatedPresent = await publicClaimPresent(wish.id, claimerName);
+    const wishIndex = wishes.value.findIndex(w => w.id === wish.id);
     if (wishIndex !== -1) {
       wishes.value[wishIndex] = updatedPresent;
     }
-    
-    closeClaimDialog();
   } catch (e) {
     console.error('Failed to claim wish:', e);
-    claimError.value = 'Failed to claim. Please try again.';
-  } finally {
-    claiming.value = false;
+    throw e;
+  }
+}
+
+async function handleClaimRandomWish({ wish, claimerName }) {
+  await handleClaimWish({ wish, claimerName });
+  randomPickerDialog.value = false;
+}
+
+function openRandomPicker() {
+  const unclaimedWishes = wishes.value.filter(w => !w.claimed);
+  if (unclaimedWishes.length >= 2) {
+    randomPickerDialog.value = true;
   }
 }
 
@@ -472,188 +173,6 @@ watch(wishListName, (newName) => {
     document.title = `${newName} - presentnow`;
   }
 });
-
-// Random picker functions
-function openRandomPicker() {
-  const unclaimedWishes = wishes.value.filter(w => !w.claimed);
-  if (unclaimedWishes.length < 2) {
-    return;
-  }
-
-  createDisplayItems();
-  randomPickerDialog.value = true;
-  showResult.value = false;
-  isSpinning.value = false;
-  isPreparingSpin.value = false;
-  randomlySelectedWish.value = null;
-  selectedIndex.value = -1;
-
-
-  // Ensure case items start at initial position
-  setTimeout(() => {
-    if (caseItems.value) {
-      caseItems.value.style.transform = 'translateX(0)';
-    }
-  }, 100);
-}
-
-function createDisplayItems() {
-  const unclaimedWishes = wishes.value.filter(w => !w.claimed);
-  const items = [];
-
-  for (let i = 0; i < 20; i++) {
-    items.push(...unclaimedWishes);
-  }
-  
-  displayItems.value = items;
-}
-
-async function startSpinning() {
-  if (isSpinning.value) {
-    return;
-  }
-
-  const unclaimedWishes = wishes.value.filter(w => !w.claimed);
-  if (unclaimedWishes.length === 0) {
-    return;
-  }
-
-  if (!displayItems.value.length) {
-    createDisplayItems();
-  }
-
-  await nextTick();
-
-  const itemsEl = caseItems.value;
-  const containerEl = caseContainer.value;
-
-  if (!itemsEl || !containerEl || !itemsEl.children.length) {
-    console.warn('Random picker not ready: missing DOM elements');
-    return;
-  }
-
-  isPreparingSpin.value = false;
-  isSpinning.value = true;
-  showResult.value = false;
-  randomlySelectedWish.value = null;
-  selectedIndex.value = -1;
-
-  itemsEl.style.transition = 'none';
-  itemsEl.style.transform = 'translateX(0)';
-  void itemsEl.offsetWidth; // Force reflow
-  itemsEl.style.transition = '';
-
-  const totalItems = itemsEl.children.length;
-  const uniqueCount = unclaimedWishes.length;
-
-  const loopsBeforeSelection = 4;
-  const loopsAfterSelection = 4;
-  const minIndex = Math.min(totalItems - 1, uniqueCount * loopsBeforeSelection);
-  const maxIndex = Math.max(minIndex, totalItems - (uniqueCount * loopsAfterSelection) - 1);
-  const randomIndex = minIndex + Math.floor(Math.random() * Math.max(1, maxIndex - minIndex + 1));
-
-  const targetElement = itemsEl.children[randomIndex];
-  if (!targetElement) {
-    console.warn('Unable to locate target element for random picker');
-    isSpinning.value = false;
-    return;
-  }
-
-  const selectorPosition = containerEl.clientWidth / 2;
-  const itemCenter = targetElement.offsetLeft + targetElement.clientWidth / 2;
-  const finalTranslate = itemCenter - selectorPosition;
-
-  requestAnimationFrame(() => {
-    itemsEl.style.transform = `translateX(-${finalTranslate}px)`;
-  });
-
-  const spinDuration = getTransitionDurationMs(itemsEl) + 100;
-
-  setTimeout(() => {
-    selectedIndex.value = randomIndex;
-    randomlySelectedWish.value = displayItems.value[randomIndex] || null;
-    isSpinning.value = false;
-    showResult.value = true;
-  }, spinDuration);
-}
-
-function parseTimeToMs(value) {
-  if (!value) {
-    return 0;
-  }
-
-  const trimmed = value.trim();
-  if (trimmed.endsWith('ms')) {
-    return parseFloat(trimmed.replace('ms', '')) || 0;
-  }
-
-  if (trimmed.endsWith('s')) {
-    return (parseFloat(trimmed.replace('s', '')) || 0) * 1000;
-  }
-
-  const numeric = parseFloat(trimmed);
-  return Number.isFinite(numeric) ? numeric * 1000 : 0;
-}
-
-function getTransitionDurationMs(element) {
-  if (typeof window === 'undefined' || !element) {
-    return 3000;
-  }
-
-  const style = window.getComputedStyle(element);
-  const durations = style.transitionDuration.split(',').map(parseTimeToMs);
-  const delays = style.transitionDelay.split(',').map(parseTimeToMs);
-
-  const maxDuration = durations.length ? Math.max(...durations) : 3000;
-  const maxDelay = delays.length ? Math.max(...delays) : 0;
-
-  return maxDuration + maxDelay;
-}
-
-function claimRandomWish() {
-  selectedWish.value = randomlySelectedWish.value;
-
-  const savedName = sessionStorage.getItem(CLAIMER_NAME_KEY);
-  if (savedName) {
-    claimerName.value = savedName;
-  }
-  
-  closeRandomPicker();
-  claimDialog.value = true;
-}
-
-function rollAgain() {
-  showResult.value = false;
-  randomlySelectedWish.value = null;
-  selectedIndex.value = -1;
-  isPreparingSpin.value = true;
-
-  if (caseItems.value) {
-    caseItems.value.style.transform = 'translateX(0)';
-  }
-
-  createDisplayItems();
-
-  setTimeout(() => {
-    startSpinning();
-  }, 300);
-}
-
-function closeRandomPicker() {
-  randomPickerDialog.value = false;
-  setTimeout(() => {
-    showResult.value = false;
-    isSpinning.value = false;
-    randomlySelectedWish.value = null;
-  selectedIndex.value = -1;
-    displayItems.value = [];
-  isPreparingSpin.value = false;
-
-    if (caseItems.value) {
-      caseItems.value.style.transform = 'translateX(0)';
-    }
-  }, 300);
-}
 
 onMounted(async () => {
   try {
@@ -696,6 +215,13 @@ onMounted(async () => {
   min-height: 100vh;
   width: 100%;
   padding: 2rem 1rem;
+}
+
+@media (max-width: 600px) {
+  .bg-image {
+    background-attachment: scroll;
+    padding: 1rem 1rem 2rem 1rem;
+  }
 }
 
 .header-nav {
@@ -765,16 +291,11 @@ onMounted(async () => {
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.deadline-card,
 .wishes-card {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-radius: 16px !important;
   animation: slideUp 0.5s ease-out;
-}
-
-.deadline-card {
-  max-width: 600px;
 }
 
 .card-title-centered {
@@ -788,23 +309,6 @@ onMounted(async () => {
   justify-content: center;
 }
 
-.deadline-date {
-  font-size: 1.2rem;
-  color: #666;
-  margin-bottom: 1rem;
-}
-
-.time-remaining {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #e46842;
-}
-
-.time-urgent {
-  color: #f44336;
-  animation: pulse 2s ease-in-out infinite;
-}
-
 .empty-state {
   text-align: center;
   padding: 4rem 2rem;
@@ -816,142 +320,17 @@ onMounted(async () => {
   font-size: 1.2rem;
 }
 
-.wish-card {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+.random-picker-btn {
+  font-size: 1.1rem !important;
+  padding: 12px 24px !important;
   border-radius: 12px !important;
-  transition: all 0.3s ease;
-  background: white;
-  border-left: 4px solid transparent;
+  box-shadow: 0 4px 12px rgba(228, 104, 66, 0.3) !important;
+  transition: all 0.3s ease !important;
 }
 
-.wish-card:not(.wish-card-claimed) {
-  border-left-color: #e46842;
-}
-
-.wish-card-clickable {
-  cursor: pointer;
-}
-
-.wish-card-clickable:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
-}
-
-.wish-card-claimed {
-  opacity: 0.7;
-  background: #f5f5f5;
-  border-left-color: #4caf50;
-}
-
-.wish-card-header {
-  padding: 0.75rem 1rem 0;
-  display: flex;
-  justify-content: flex-end;
-  min-height: 36px;
-}
-
-.claimed-chip {
-  font-weight: 600;
-}
-
-.link-icon {
-  opacity: 0.7;
-}
-
-.wish-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #333;
-  padding: 0.5rem 1rem;
-  word-break: break-word;
-}
-
-.wish-description {
-  padding: 0 1rem 1rem;
-  flex-grow: 1;
-}
-
-.description-text {
-  color: #666;
-  font-size: 0.95rem;
-  margin-bottom: 0.5rem;
-}
-
-.claimer-info {
-  color: #4caf50;
-  font-size: 0.85rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  margin-top: 0.75rem;
-}
-
-.wish-actions {
-  padding: 0 1rem 1rem;
-}
-
-.claim-btn {
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: 0.5px;
-  border-radius: 8px !important;
-  transition: all 0.3s ease;
-}
-
-.claim-btn:hover {
+.random-picker-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(228, 104, 66, 0.3) !important;
-}
-
-.claim-dialog-card {
-  border-radius: 16px !important;
-  overflow: hidden;
-}
-
-.claim-dialog-header {
-  background: linear-gradient(135deg, #e46842 0%, #d94d27 100%);
-  color: white;
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1.4rem;
-  font-weight: 700;
-}
-
-.claim-dialog-content {
-  padding: 2rem 1.5rem 1.5rem;
-}
-
-.claim-wish-name {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 1.5rem;
-  display: flex;
-  align-items: center;
-  padding: 1rem;
-  background: #f9f9f9;
-  border-radius: 8px;
-}
-
-.claim-instruction {
-  color: #666;
-  margin-bottom: 1rem;
-  font-size: 1rem;
-}
-
-.claim-dialog-actions {
-  padding: 1rem 1.5rem 1.5rem;
-  justify-content: space-between;
-}
-
-.claim-submit-btn {
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: 0.5px;
+  box-shadow: 0 6px 20px rgba(228, 104, 66, 0.4) !important;
 }
 
 @keyframes fadeIn {
@@ -974,99 +353,82 @@ onMounted(async () => {
   }
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
 @media (max-width: 960px) {
   .wishlist-name {
     font-size: 2rem;
   }
-
-  .time-remaining {
-    font-size: 1.5rem;
-  }
 }
 
 @media (max-width: 600px) {
-  .bg-image {
-    padding: 1rem 0.5rem;
+  .main-content {
+    max-width: 100%;
   }
 
   .wishlist-name {
     font-size: 1.8rem;
+    line-height: 1.3;
   }
 
-  .card-title-centered {
-    font-size: 1.2rem;
-    padding: 1rem;
-  }
-
-  .time-remaining {
-    font-size: 1.3rem;
+  .page-header {
+    margin-bottom: 1.5rem;
   }
 
   .wishes-card {
-    margin: 0;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
-  .wish-card {
-    margin-bottom: 0.75rem;
+  .wishes-card .v-card-title {
+    display: none !important;
   }
 
-  .wish-title {
-    font-size: 1rem;
+  .wishes-card .v-card-text {
+    padding: 0 !important;
   }
 
-  .claim-btn {
-    font-size: 0.9rem;
+  .wishes-card .pa-6 {
+    padding: 0 !important;
   }
 
-  .claim-dialog-card {
-    margin: 1rem;
+  .wishes-card .v-row {
+    margin: 0 !important;
   }
 
-  .claim-dialog-header {
-    padding: 1rem;
-    font-size: 1.2rem;
+  .wishes-card .v-col {
+    padding: 0 0 1.25rem 0 !important;
   }
 
-  .claim-dialog-content {
-    padding: 1.5rem 1rem 1rem;
-  }
-
-  .claim-wish-name {
-    font-size: 1.1rem;
-    padding: 0.75rem;
-  }
-
-  .claim-instruction {
-    font-size: 0.9rem;
-  }
-
-  .claim-dialog-actions {
-    padding: 0.75rem 1rem 1rem;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .claim-dialog-actions .v-btn {
+  .random-picker-btn {
     width: 100%;
+    max-width: 100%;
+    font-size: 1.05rem !important;
+    padding: 16px 24px !important;
+    min-height: 56px;
+    border-radius: 16px !important;
+    box-shadow: 0 6px 20px rgba(228, 104, 66, 0.35) !important;
+  }
+
+  .empty-state {
+    padding: 4rem 1.5rem;
+  }
+
+  .empty-state p {
+    font-size: 1.1rem;
   }
 }
 
 @media (max-width: 480px) {
   .header-nav {
     margin-bottom: 1rem;
+    padding: 0;
   }
 
   .logo-small {
-    width: 60px !important;
+    width: 55px !important;
   }
 
   .logo-text {
@@ -1074,204 +436,33 @@ onMounted(async () => {
   }
 
   .wishlist-name {
-    font-size: 1.5rem;
-    padding: 0 0.5rem;
+    font-size: 1.6rem;
+    padding: 0;
+    line-height: 1.3;
   }
 
   .page-header {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
   }
 
-  .deadline-card,
-  .wishes-card {
-    border-radius: 12px !important;
+  .card-title-centered {
+    font-size: 1.2rem;
   }
-}
 
-.random-picker-btn {
-  font-size: 1.1rem !important;
-  padding: 12px 24px !important;
-  border-radius: 12px !important;
-  box-shadow: 0 4px 12px rgba(228, 104, 66, 0.3) !important;
-  transition: all 0.3s ease !important;
-}
-
-.random-picker-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(228, 104, 66, 0.4) !important;
-}
-
-.case-opening-card {
-  background: white;
-  color: #2d2d2d;
-  border-radius: 16px !important;
-  overflow: hidden;
-}
-
-.case-title {
-  background: rgb(228, 104, 66);
-  color: white;
-  padding: 20px;
-  border-bottom: 1px solid rgba(228, 104, 66, 0.2);
-}
-
-.case-content {
-  padding: 20px;
-  background: white;
-}
-
-.case-container {
-  position: relative;
-  background: #ffffff;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 2px solid rgba(228, 104, 66, 0.25);
-}
-
-.case-frame {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-.case-selector {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 4px;
-  height: 80%;
-  background: linear-gradient(180deg, transparent, rgba(228, 104, 66, 0.85), transparent);
-  z-index: 10;
-  border-radius: 2px;
-}
-
-.case-items {
-  display: flex;
-  height: 100%;
-  align-items: center;
-  transition: transform 3s cubic-bezier(0.23, 1, 0.320, 1);
-  gap: 10px;
-  padding: 0 20px;
-  background: #ffffff;
-}
-
-@keyframes spin {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: var(--final-transform, translateX(-2000px));
+  .random-picker-btn {
+    font-size: 1rem !important;
+    padding: 14px 20px !important;
+    min-height: 54px;
   }
 }
 
-.case-item {
-  flex-shrink: 0;
-  width: 140px;
-  height: 160px;
-  margin: 0 5px;
-  transition: all 0.3s ease;
-}
-
-.item-card {
-  width: 100%;
-  height: 100%;
-  background: white;
-  border-radius: 8px;
-  padding: 12px;
-  border: 1px solid rgba(228, 104, 66, 0.3);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-  transition: all 0.3s ease;
-}
-
-.case-item.selected .item-card {
-  transform: scale(1.05);
-  border: 2px solid rgb(228, 104, 66) !important;
-}
-
-.item-name {
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: rgb(228, 104, 66);
-  margin-bottom: 8px;
-  line-height: 1.2;
-}
-
-.item-description {
-  font-size: 0.75rem;
-  color: #555;
-  line-height: 1.3;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-}
-
-.result-container {
-  text-align: center;
-  margin-top: 20px;
-  padding: 20px;
-  background: white;
-  border-radius: 12px;
-  border: 1px solid rgba(228, 104, 66, 0.3);
-  transition: all 0.3s ease;
-}
-
-.result-clickable {
-  cursor: pointer;
-}
-
-.result-clickable:hover {
-  transform: translateY(-4px);
-  background: #fafafa;
-  border-color: rgba(228, 104, 66, 0.6);
-  box-shadow: 0 8px 16px rgba(228, 104, 66, 0.2);
-}
-
-.result-clickable:active {
-  transform: translateY(-2px);
-}
-
-.result-link-hint {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #2196f3;
-  font-size: 0.9rem;
-  margin-top: 8px;
-  font-weight: 500;
-}
-
-.result-glow {
-  animation: glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes glow {
-  from {
-    box-shadow: 0 0 10px rgba(228, 104, 66, 0.3);
+@media (hover: none) and (pointer: coarse) {
+  .header-nav:active {
+    transform: scale(0.97);
   }
-  to {
-    box-shadow: 0 0 20px rgba(228, 104, 66, 0.6);
+
+  .random-picker-btn:active {
+    transform: scale(0.97);
   }
-}
-
-.spin-btn {
-  padding: 5px 12px !important;
-  font-size: 1.2rem !important;
-  border-radius: 12px !important;
-  background: rgb(228, 104, 66) !important;
-  color: white !important;
-  box-shadow: 0 4px 15px rgba(228, 104, 66, 0.4) !important;
-  transition: all 0.3s ease !important;
-}
-
-.spin-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(228, 104, 66, 0.6) !important;
 }
 </style>
-
