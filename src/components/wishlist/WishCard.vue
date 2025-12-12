@@ -2,7 +2,7 @@
   <v-card
     class="wish-card"
     :class="{
-      'wish-card-clickable': wish.url && !wish.claimed,
+      'wish-card-clickable': wish.url,
       'wish-card-claimed': wish.claimed
     }"
     elevation="3"
@@ -58,9 +58,7 @@ const props = defineProps({
 const emit = defineEmits(['click', 'claim']);
 
 function handleClick() {
-  if (!props.wish.claimed) {
-    emit('click', props.wish);
-  }
+  emit('click', props.wish);
 }
 </script>
 

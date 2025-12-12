@@ -108,10 +108,6 @@ function toHome() {
 }
 
 async function handleWishClick(wish) {
-  if (wish.claimed) {
-    return;
-  }
-  
   const link = await getWishLink(wish);
   if (link) {
     openWishLink(link);
