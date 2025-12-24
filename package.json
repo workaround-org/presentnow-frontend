@@ -14,7 +14,7 @@
     "@mdi/font": "^7.4.47",
     "oidc-client-ts": "^3.3.0",
     "vue": "^3.5.22",
-    "vue-router": "^4.6.3",
+    "vue-router": "^4.6.4",
     "vuetify": "^3.10.7"
   },
   "devDependencies": {
