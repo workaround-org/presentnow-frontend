@@ -12,7 +12,7 @@
   "dependencies": {
     "@fontsource/poppins": "^5.2.7",
     "@mdi/font": "^7.4.47",
-    "oidc-client-ts": "^3.3.0",
+    "oidc-client-ts": "^3.4.1",
     "vue": "^3.5.22",
     "vue-router": "^4.6.3",
     "vuetify": "^3.10.7"

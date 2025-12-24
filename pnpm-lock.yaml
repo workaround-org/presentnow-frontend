@@ -15,8 +15,8 @@ importers:
         specifier: ^7.4.47
         version: 7.4.47
       oidc-client-ts:
-        specifier: ^3.3.0
-        version: 3.3.0
+        specifier: ^3.4.1
+        version: 3.4.1
       vue:
         specifier: ^3.5.22
         version: 3.5.22(typescript@5.9.3)
@@ -802,8 +802,8 @@ packages:
     resolution: {integrity: sha512-9qny7Z9DsQU8Ou39ERsPU4OZQlSTP47ShQzuKZ6PRXpYLtIFgl/DEBYEXKlvcEa+9tHVcK8CF81Y2V72qaZhWA==}
     engines: {node: '>=18'}
 
-  oidc-client-ts@3.3.0:
-    resolution: {integrity: sha512-t13S540ZwFOEZKLYHJwSfITugupW4uYLwuQSSXyKH/wHwZ+7FvgHE7gnNJh1YQIZ1Yd1hKSRjqeXGSUtS0r9JA==}
+  oidc-client-ts@3.4.1:
+    resolution: {integrity: sha512-jNdst/U28Iasukx/L5MP6b274Vr7ftQs6qAhPBCvz6Wt5rPCA+Q/tUmCzfCHHWweWw5szeMy2Gfrm1rITwUKrw==}
     engines: {node: '>=18'}
 
   open@10.2.0:
@@ -1759,7 +1759,7 @@ snapshots:
       path-key: 4.0.0
       unicorn-magic: 0.3.0
 
-  oidc-client-ts@3.3.0:
+  oidc-client-ts@3.4.1:
     dependencies:
       jwt-decode: 4.0.0
 
