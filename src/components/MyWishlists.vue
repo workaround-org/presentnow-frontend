@@ -1,58 +1,49 @@
 <template>
-  <div class="bg-image">
+  <div class="my-wishlists-page">
     <AppHeader />
 
     <v-main>
       <v-container class="py-8">
         <div class="content-wrapper">
-          <div class="header-section mb-8 text-center">
-            <h1 class="page-title">My Wishlists</h1>
-            <p class="page-subtitle">Manage your wishlists and share them with others</p>
+          <div class="header-section mb-8 d-flex flex-column align-center">
+            <h1 class="page-title mb-3">My Wishlists</h1>
+            <v-btn
+              @click="showCreateDialog = true"
+              color="#e46842"
+              variant="flat"
+              class="create-btn"
+              prepend-icon="mdi-plus"
+            >
+              New Wishlist
+            </v-btn>
           </div>
 
         <div v-if="loading" class="text-center py-12">
           <v-progress-circular
             indeterminate
             color="#e46842"
-            size="64"
-            width="6"
+            size="48"
+            width="4"
           ></v-progress-circular>
-          <p class="loading-text mt-4">Loading your wishlists...</p>
         </div>
 
         <div v-else-if="error" class="text-center py-12">
-          <v-icon size="64" color="error" class="mb-4">mdi-alert-circle</v-icon>
-          <h3 class="text-h5 mb-2">Error Loading Wishlists</h3>
+          <v-icon size="48" color="error" class="mb-4">mdi-alert-circle-outline</v-icon>
           <p class="text-body-1 text-medium-emphasis mb-4">{{ error }}</p>
           <v-btn
             @click="loadWishlists"
             color="#e46842"
-            size="large"
+            variant="text"
           >
-            <v-icon left>mdi-refresh</v-icon>
             Retry
           </v-btn>
         </div>
 
         <div v-else>
-          <div class="mb-6 text-center">
-            <v-btn
-              @click="showCreateDialog = true"
-              color="#e46842"
-              size="large"
-              elevation="2"
-              class="create-btn"
-            >
-              <v-icon left>mdi-plus</v-icon>
-              Create New Wishlist
-            </v-btn>
-          </div>
-
           <div v-if="wishlists.length === 0" class="empty-state text-center py-12">
-            <v-icon size="100" color="#e46842" class="mb-4 empty-icon">mdi-gift-outline</v-icon>
-            <h3 class="text-h5 mb-2">No Wishlists Yet</h3>
-            <p class="text-body-1 text-medium-emphasis mb-4">
-              Create your first wishlist to get started!
+            <v-icon size="64" color="#e0e0e0" class="mb-4">mdi-gift-outline</v-icon>
+            <p class="text-body-1 text-medium-emphasis">
+              No wishlists yet
             </p>
           </div>
 
@@ -65,67 +56,43 @@
               md="4"
             >
               <v-card
-                class="wishlist-card elevation-4"
+                class="wishlist-card"
                 :class="{ 'inactive-card': !wishlist.active }"
                 @click="viewWishlist(wishlist.id)"
-                hover
+                flat
+                border
               >
-                <v-card-title class="card-title">
-                  <v-icon left color="#e46842">mdi-gift</v-icon>
-                  {{ wishlist.name }}
-                </v-card-title>
-                
-                <v-card-text>
-                  <p class="wishlist-description" v-if="wishlist.description">
-                    {{ wishlist.description }}
-                  </p>
-                  <p class="wishlist-description text-medium-emphasis" v-else>
-                    No description
-                  </p>
+                <div class="card-content pa-6">
+                  <div class="d-flex justify-space-between align-start mb-2">
+                    <h3 class="card-title text-truncate pr-2">
+                      {{ wishlist.name }}
+                    </h3>
+                    <div class="card-actions">
+                      <v-btn
+                        icon="mdi-delete-outline"
+                        variant="text"
+                        density="compact"
+                        color="error"
+                        @click.stop="confirmDelete(wishlist)"
+                      ></v-btn>
+                    </div>
+                  </div>
                   
-                  <div class="mt-3">
+                  <div class="d-flex align-center mt-4">
                     <v-chip
-                      size="small"
+                      size="x-small"
                       :color="wishlist.active ? 'success' : 'grey'"
-                      variant="flat"
+                      variant="tonal"
                       class="mr-2"
                     >
-                      <v-icon left size="small">
-                        {{ wishlist.active ? 'mdi-check-circle' : 'mdi-pause-circle' }}
-                      </v-icon>
                       {{ wishlist.active ? 'Active' : 'Inactive' }}
                     </v-chip>
                     
-                    <v-chip
-                      size="small"
-                      color="primary"
-                      variant="flat"
-                    >
-                      <v-icon left size="small">mdi-counter</v-icon>
+                    <span class="text-caption text-medium-emphasis">
                       {{ getItemCount(wishlist) }} items
-                    </v-chip>
+                    </span>
                   </div>
-                </v-card-text>
-
-                <v-card-actions>
-                  <v-btn
-                    variant="text"
-                    color="#e46842"
-                    size="small"
-                    @click.stop="viewWishlist(wishlist.id)"
-                  >
-                    <v-icon left>mdi-eye</v-icon>
-                    Edit
-                  </v-btn>
-                  <v-spacer></v-spacer>
-                  <v-btn
-                    icon="mdi-delete"
-                    variant="text"
-                    color="error"
-                    size="small"
-                    @click.stop="confirmDelete(wishlist)"
-                  ></v-btn>
-                </v-card-actions>
+                </div>
               </v-card>
             </v-col>
           </v-row>
@@ -139,18 +106,18 @@
       @wishlist-created="loadWishlists"
     />
 
-    <v-dialog v-model="deleteDialog" max-width="500">
+    <v-dialog v-model="deleteDialog" max-width="400">
       <v-card>
-        <v-card-title class="text-h5">
-          Delete Wishlist
+        <v-card-title class="text-h6 pt-4 px-4">
+          Delete Wishlist?
         </v-card-title>
-        <v-card-text>
-          Are you sure you want to delete "{{ wishlistToDelete?.name }}"? This action cannot be undone.
+        <v-card-text class="px-4 pb-2">
+          "{{ wishlistToDelete?.name }}" will be permanently deleted.
         </v-card-text>
-        <v-card-actions>
+        <v-card-actions class="px-4 pb-4">
           <v-spacer></v-spacer>
           <v-btn
-            color="grey"
+            color="grey-darken-1"
             variant="text"
             @click="deleteDialog = false"
           >
@@ -256,136 +223,62 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.bg-image {
-  background-image: url('../assets/images/background.png');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
+.my-wishlists-page {
   min-height: 100vh;
-  width: 100%;
 }
 
 .content-wrapper {
-  max-width: 1200px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
-.header-section {
-  animation: fadeIn 0.5s ease-in;
-}
-
 .page-title {
-  color: #333;
-  font-size: 2.5rem;
+  color: #2c3e50;
+  font-size: 1.75rem;
   font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.page-subtitle {
-  color: #666;
-  font-size: 1.1rem;
-  font-weight: 400;
-}
-
-.loading-text {
-  color: #555;
-  font-size: 1.1rem;
-  font-weight: 500;
+  margin: 0;
 }
 
 .create-btn {
-  font-weight: 600;
   text-transform: none;
-  letter-spacing: 0.5px;
-  border-radius: 8px !important;
-  transition: all 0.3s ease;
-}
-
-.create-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(228, 104, 66, 0.3) !important;
-}
-
-.empty-state {
-  animation: fadeIn 0.5s ease-in;
-}
-
-.empty-icon {
-  animation: pulse 2s infinite;
+  font-weight: 600;
+  border-radius: 8px;
 }
 
 .wishlist-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
   border-radius: 12px !important;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   cursor: pointer;
-  animation: slideUp 0.5s ease-out;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
 }
 
 .wishlist-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12) !important;
+  border-color: #e46842;
 }
 
 .inactive-card {
-  opacity: 0.7;
+  opacity: 0.8;
+  background-color: #fcfcfc;
+}
+
+.card-actions {
+  display: flex;
+  gap: 2px;
 }
 
 .card-title {
   font-weight: 600;
-  font-size: 1.2rem;
-  color: #333;
-}
-
-.wishlist-description {
-  color: #555;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 1;
-  }
+  font-size: 1.1rem;
+  color: #2c3e50;
+  margin: 0;
 }
 
 @media (max-width: 600px) {
   .page-title {
-    font-size: 2rem;
-  }
-  
-  .page-subtitle {
-    font-size: 1rem;
+    font-size: 1.5rem;
   }
 }
 </style>

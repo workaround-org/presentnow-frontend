@@ -1,13 +1,13 @@
 <template>
-  <v-app-bar color="#e46842" elevation="4" class="app-bar">
+  <v-app-bar color="transparent" elevation="0" height="88" class="app-bar">
     <v-container class="d-flex align-center px-4">
       <div class="d-flex align-center logo-container" @click="goToHome">
         <v-img
           class="logo-img"
-          :width="40"
+          :width="42"
           :src="presentNowIcon"
         ></v-img>
-        <v-toolbar-title class="ml-3 text-white font-weight-bold title-text">
+        <v-toolbar-title class="ml-3 text-primary font-weight-bold title-text">
           presentnow
         </v-toolbar-title>
       </div>
@@ -31,16 +31,12 @@ function goToHome() {
 
 <style scoped>
 .app-bar {
-  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0,0,0,0.05) !important;
 }
 
 .logo-img {
-  border-radius: 8px;
-  background-color: white;
-  padding: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  max-width: 40px;
-  max-height: 40px;
+  max-width: 42px;
+  max-height: 42px;
 }
 
 .logo-container {
@@ -49,10 +45,13 @@ function goToHome() {
 }
 
 .logo-container:hover {
-  opacity: 0.9;
+  opacity: 0.8;
 }
 
 .title-text {
+  color: #e46842 !important;
+  font-size: 1.55rem;
+  letter-spacing: -0.5px;
   user-select: none;
   cursor: pointer;
 }

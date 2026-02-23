@@ -5,43 +5,42 @@
       'wish-card-clickable': wish.url,
       'wish-card-claimed': wish.claimed
     }"
-    elevation="3"
+    flat
+    border
     @click="handleClick"
   >
-    <div class="wish-card-header">
-      <v-chip v-if="wish.claimed" color="success" size="small" class="claimed-chip">
-        <v-icon size="small" start>mdi-check</v-icon>
-        Claimed
-      </v-chip>
-      <v-icon v-else-if="wish.url" size="small" color="#2196f3" class="link-icon">
-        mdi-link-variant
+    <div class="d-flex justify-space-between align-start pa-4 pb-2">
+      <h3 class="wish-title text-truncate pr-2">
+        {{ wish.name || 'Unnamed Wish' }}
+      </h3>
+      <v-icon v-if="wish.url" size="small" color="primary" class="flex-shrink-0">
+        mdi-open-in-new
       </v-icon>
     </div>
 
-    <v-card-title class="wish-title">
-      {{ wish.name || 'Unnamed Wish' }}
-    </v-card-title>
-
-    <v-card-text class="wish-description">
-      <div v-if="wish.description" class="description-text">
+    <v-card-text class="px-4 py-2 flex-grow-1">
+      <p v-if="wish.description" class="wish-description text-body-2 text-medium-emphasis mb-0">
         {{ wish.description }}
-      </div>
-      <div v-if="wish.claimed && wish.claimerName" class="claimer-info">
-        <v-icon size="small" class="mr-1">mdi-account</v-icon>
-        Claimed by {{ wish.claimerName }}
+      </p>
+      
+      <div v-if="wish.claimed" class="mt-3 d-flex align-center text-success">
+        <v-icon size="small" start>mdi-check-circle</v-icon>
+        <span class="text-caption font-weight-medium">
+          Claimed by {{ wish.claimerName || 'Someone' }}
+        </span>
       </div>
     </v-card-text>
 
-    <v-card-actions v-if="!wish.claimed" class="wish-actions">
+    <v-card-actions v-if="!wish.claimed" class="px-4 pb-4 pt-2">
       <v-btn
         color="#e46842"
-        variant="elevated"
+        variant="tonal"
         block
         class="claim-btn"
         @click.stop="$emit('claim', wish)"
+        height="40"
       >
-        <v-icon start>mdi-hand-heart</v-icon>
-        I'll get this!
+        I'll get this
       </v-btn>
     </v-card-actions>
   </v-card>
@@ -68,15 +67,8 @@ function handleClick() {
   display: flex;
   flex-direction: column;
   border-radius: 12px !important;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   background: white;
-  border-left: 4px solid transparent;
-  position: relative;
-  overflow: hidden;
-}
-
-.wish-card:not(.wish-card-claimed) {
-  border-left-color: #e46842;
 }
 
 .wish-card-clickable {
@@ -84,154 +76,34 @@ function handleClick() {
 }
 
 .wish-card-clickable:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
-}
-
-.wish-card-clickable:active {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12) !important;
+  border-color: #e46842;
+  background-color: #fffbf9;
 }
 
 .wish-card-claimed {
-  opacity: 0.7;
-  background: #f5f5f5;
-  border-left-color: #4caf50;
-}
-
-.wish-card-header {
-  padding: 0.75rem 1rem 0;
-  display: flex;
-  justify-content: flex-end;
-  min-height: 36px;
-}
-
-.claimed-chip {
-  font-weight: 600;
-}
-
-.link-icon {
-  opacity: 0.7;
+  background-color: #f8f9fa;
+  opacity: 0.8;
 }
 
 .wish-title {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #333;
-  padding: 0.5rem 1rem;
-  word-break: break-word;
+  color: #2c3e50;
+  margin: 0;
+  line-height: 1.4;
 }
 
 .wish-description {
-  padding: 0 1rem 1rem;
-  flex-grow: 1;
-}
-
-.description-text {
-  color: #666;
-  font-size: 0.95rem;
-  margin-bottom: 0.5rem;
-}
-
-.claimer-info {
-  color: #4caf50;
-  font-size: 0.85rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  margin-top: 0.75rem;
-}
-
-.wish-actions {
-  padding: 0 1rem 1rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .claim-btn {
-  font-weight: 600;
   text-transform: none;
+  font-weight: 600;
   letter-spacing: 0.5px;
-  border-radius: 8px !important;
-  transition: all 0.3s ease;
-  min-height: 44px;
-}
-
-.claim-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(228, 104, 66, 0.3) !important;
-}
-
-.claim-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 3px 8px rgba(228, 104, 66, 0.25) !important;
-}
-
-@media (max-width: 600px) {
-  .wish-card {
-    margin-bottom: 0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
-    border-radius: 16px !important;
-  }
-
-  .wish-card-header {
-    padding: 1rem 1rem 0.5rem 1rem !important;
-  }
-
-  .wish-card .v-card-title.wish-title {
-    display: block !important;
-    font-size: 1.1rem !important;
-    padding: 0 1rem 0.75rem 1rem !important;
-    line-height: 1.4 !important;
-  }
-
-  .wish-card .v-card-text.wish-description {
-    display: block !important;
-    padding: 0 1rem 0.75rem 1rem !important;
-  }
-
-  .description-text {
-    font-size: 0.95rem;
-    line-height: 1.6;
-  }
-
-  .wish-card .wish-actions {
-    padding: 0 1rem 1rem 1rem !important;
-  }
-
-  .claim-btn {
-    font-size: 1rem;
-    padding: 14px 16px;
-    min-height: 52px;
-    border-radius: 12px !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .wish-card {
-    border-radius: 14px !important;
-  }
-
-  .wish-title {
-    font-size: 1.05rem;
-  }
-
-  .description-text {
-    font-size: 0.9rem;
-  }
-
-  .claim-btn {
-    min-height: 50px;
-    font-size: 0.95rem;
-  }
-}
-
-@media (hover: none) and (pointer: coarse) {
-  .wish-card-clickable:active {
-    transform: scale(0.98);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
-  }
-
-  .claim-btn:active {
-    transform: scale(0.97);
-  }
+  border-radius: 8px;
 }
 </style>

@@ -1,34 +1,28 @@
 <template>
-  <v-dialog :model-value="modelValue" @update:model-value="emit('update:modelValue', $event)" max-width="500" persistent>
+  <v-dialog :model-value="modelValue" @update:model-value="emit('update:modelValue', $event)" max-width="400" persistent>
     <v-card class="dialog-card">
-      <v-card-title class="dialog-header">
-        <v-icon left color="#e46842" size="large">mdi-gift-open</v-icon>
-        <span class="dialog-title-text">Create Your Wishlist</span>
+      <v-card-title class="dialog-header pt-4 px-4">
+        <span class="dialog-title-text">New Wishlist</span>
       </v-card-title>
       
-      <v-card-text class="dialog-content">
-        <p class="dialog-subtitle">Give your wishlist a memorable name</p>
+      <v-card-text class="dialog-content px-4 pt-2 pb-0">
         <v-text-field
             v-model="wishlistName"
-            placeholder="e.g., Birthday 2024"
+            placeholder="Name (e.g. Birthday 2024)"
             variant="outlined"
             density="comfortable"
             color="#e46842"
             maxlength="100"
-            counter
             autofocus
             hide-details="auto"
             @keyup.enter="createWishlist"
-        >
-          <template v-slot:prepend-inner>
-            <v-icon color="#e46842">mdi-pencil</v-icon>
-          </template>
-        </v-text-field>
+        ></v-text-field>
       </v-card-text>
       
-      <v-card-actions class="dialog-actions">
+      <v-card-actions class="dialog-actions px-4 pb-4 pt-4">
+        <v-spacer></v-spacer>
         <v-btn
-            color="grey"
+            color="grey-darken-1"
             variant="text"
             @click="$emit('update:modelValue', false)"
             :disabled="isSaving"
@@ -39,13 +33,11 @@
             @click="createWishlist"
             class="create-btn"
             color="#e46842"
-            size="large"
+            variant="flat"
             :loading="isSaving"
             :disabled="isSaving || !wishlistName.trim()"
-            elevation="2"
         >
-          <v-icon left>mdi-check-circle</v-icon>
-          Create Wishlist
+          Create
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -104,38 +96,13 @@ async function createWishlist() {
 
 <style scoped>
 .dialog-card {
-  border-radius: 16px !important;
-  overflow: hidden;
-}
-
-.dialog-header {
-  background: linear-gradient(135deg, #e46842 0%, #d94d27 100%);
-  color: white;
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  border-radius: 12px !important;
 }
 
 .dialog-title-text {
-  font-size: 1.4rem;
-  font-weight: 700;
-}
-
-.dialog-content {
-  padding: 2rem 1.5rem 1.5rem;
-}
-
-.dialog-subtitle {
-  color: #666;
-  font-size: 1rem;
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-
-.dialog-actions {
-  padding: 1rem 1.5rem 1.5rem;
-  justify-content: space-between;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
 }
 
 .create-btn {
@@ -143,45 +110,5 @@ async function createWishlist() {
   text-transform: none;
   letter-spacing: 0.5px;
   border-radius: 8px !important;
-  transition: all 0.3s ease;
-}
-
-.create-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(228, 104, 66, 0.3) !important;
-}
-
-@media (max-width: 600px) {
-  .dialog-card {
-    margin: 1rem;
-    border-radius: 12px !important;
-  }
-  
-  .dialog-header {
-    padding: 1rem;
-  }
-  
-  .dialog-title-text {
-    font-size: 1.2rem;
-  }
-  
-  .dialog-content {
-    padding: 1.5rem 1rem 1rem;
-  }
-  
-  .dialog-subtitle {
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-  }
-  
-  .dialog-actions {
-    padding: 0.75rem 1rem 1rem;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .dialog-actions .v-btn {
-    width: 100%;
-  }
 }
 </style>

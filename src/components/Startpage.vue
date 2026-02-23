@@ -1,86 +1,76 @@
 <template>
-  <div class="bg-image">
+  <div class="start-page">
     <div class="content-wrapper" v-if="!checkingAuth">
       <div class="hero-section">
         <v-img
             class="mx-auto logo-img"
-            :width="isMobile ? 150 : 200"
+            :width="120"
             :src="presentNowIcon"
         ></v-img>
         <h1 class="app-title">presentnow</h1>
-        <p class="app-subtitle">Your wishlist, beautifully shared</p>
       </div>
       
-      <v-card
-          class="main-card mx-auto pa-6 elevation-8"
-          max-width="450"
-      >
-        <div class="card-section" v-if="isAuthenticated">
-          <h2 class="section-title">My Account</h2>
+      <div class="actions-container mx-auto">
+        <div v-if="isAuthenticated" class="mb-4">
           <v-btn
               @click="goToMyWishlists"
-              class="action-btn my-wishlists-btn"
-              color="#e46842"
+              class="action-btn secondary-btn"
+              variant="text"
               size="large"
               block
-              elevation="2"
+              height="56"
           >
-            <v-icon left>mdi-format-list-bulleted</v-icon>
-            View My Wishlists
+            <v-icon start>mdi-format-list-bulleted</v-icon>
+            My Wishlists
           </v-btn>
         </div>
         
-        <v-divider class="my-6" v-if="isAuthenticated"></v-divider>
-        
-        <div class="card-section">
-          <h2 class="section-title">Enter Wishlist</h2>
+        <div class="input-group mb-4">
           <v-text-field
               v-model="wishlistCode"
               class="wishlist-input"
               placeholder="Enter PIN code"
-              variant="outlined"
-              density="comfortable"
-              color="#e46842"
+              variant="solo"
+              bg-color="white"
+              flat
+              density="default"
+              height="56"
+              single-line
+              hide-details
               @keyup.enter="enterWishlist"
-              :error-messages="errorMessage"
-              hide-details="auto"
           >
-            <template v-slot:prepend-inner>
-              <v-icon color="#e46842">mdi-key-variant</v-icon>
+            <template v-slot:append-inner>
+              <v-btn
+                @click="enterWishlist"
+                :loading="loading"
+                :disabled="!wishlistCode.trim()"
+                icon="mdi-arrow-right"
+                variant="text"
+                color="#e46842"
+                density="comfortable"
+              ></v-btn>
             </template>
           </v-text-field>
-          <v-btn
-              @click="enterWishlist"
-              :loading="loading"
-              :disabled="loading || !wishlistCode.trim()"
-              class="action-btn enter-btn mt-4"
-              color="#333333"
-              size="large"
-              block
-              elevation="2"
-          >
-            <v-icon left>mdi-login</v-icon>
-            Enter Wishlist
-          </v-btn>
+          <div v-if="errorMessage" class="error-text mt-2 text-center text-error">
+            {{ errorMessage }}
+          </div>
         </div>
         
-        <v-divider class="my-6"></v-divider>
-        
-        <div class="card-section">
-          <h2 class="section-title">Create New</h2>
+        <div>
           <v-btn
               @click="showWishListDialog = true"
-              class="action-btn create-btn"
+              class="action-btn"
               color="#e46842"
+              variant="flat"
               size="large"
               block
-              elevation="2"
+              height="56"
           >
-            <v-icon left>mdi-gift</v-icon>
-            Create Your Wishlist
+            <v-icon start>mdi-plus</v-icon>
+            Create New
           </v-btn>
         </div>
-      </v-card>
+      </div>
       
       <CreateWishListDialog
           v-model="showWishListDialog"
@@ -91,10 +81,9 @@
         <v-progress-circular
             indeterminate
             color="#e46842"
-            size="64"
-            width="6"
+            size="48"
+            width="4"
         ></v-progress-circular>
-        <p class="loading-text">Checking authentication...</p>
       </div>
     </div>
   </div>
@@ -176,22 +165,17 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.bg-image {
-  background-image: url('../assets/images/background.png');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
+.start-page {
   min-height: 100vh;
-  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1rem;
+  padding: 1rem;
 }
 
 .content-wrapper {
   width: 100%;
-  max-width: 600px;
+  max-width: 400px;
   animation: fadeIn 0.5s ease-in;
 }
 
@@ -201,147 +185,62 @@ onMounted(async () => {
 }
 
 .logo-img {
-  animation: scaleIn 0.6s ease-out;
   margin-bottom: 1rem;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
 }
 
 .app-title {
-  color: #e46842;
-  font-size: 3rem;
+  color: #2c3e50;
+  font-size: 2.5rem;
   font-weight: 700;
-  margin: 0.5rem 0;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-  animation: slideDown 0.5s ease-out;
-}
-
-.app-subtitle {
-  color: #555;
-  font-size: 1.1rem;
-  font-weight: 400;
   margin: 0;
-  opacity: 0.9;
+  letter-spacing: -1px;
 }
 
-.main-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px !important;
-  animation: slideUp 0.5s ease-out;
+.actions-container {
+  width: 100%;
 }
 
-.card-section {
-  margin: 0.5rem 0;
-}
-
-.section-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 1rem;
-  text-align: center;
+.wishlist-input :deep(.v-field) {
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
 }
 
 .wishlist-input :deep(.v-field__input) {
-  text-align: center !important;
+  text-align: center;
   font-size: 1.1rem;
-  font-weight: 500;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
 }
 
 .action-btn {
-  font-weight: 600;
+  border-radius: 12px !important;
   text-transform: none;
+  font-weight: 600;
   letter-spacing: 0.5px;
-  border-radius: 8px !important;
-  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(228, 104, 66, 0.2) !important;
 }
 
-.action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
+.secondary-btn {
+  color: #666 !important;
+  box-shadow: none !important;
 }
 
-.enter-btn:disabled {
-  opacity: 0.6;
+.secondary-btn:hover {
+  background-color: rgba(0,0,0,0.05);
+  color: #333 !important;
 }
 
-.create-btn {
-  background: linear-gradient(135deg, #e46842 0%, #d94d27 100%) !important;
-}
-
-.my-wishlists-btn {
-  background: linear-gradient(135deg, #e46842 0%, #d94d27 100%) !important;
+.error-text {
+  color: #ff5252;
+  font-size: 0.9rem;
 }
 
 .loading-container {
   text-align: center;
-  padding: 3rem;
-}
-
-.loading-text {
-  color: #555;
-  font-size: 1.1rem;
-  margin-top: 1.5rem;
-  font-weight: 500;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@media (max-width: 600px) {
-  .app-title {
-    font-size: 2.5rem;
-  }
-  
-  .app-subtitle {
-    font-size: 1rem;
-  }
-  
-  .bg-image {
-    padding: 1rem 0.5rem;
-  }
-  
-  .main-card {
-    padding: 1.5rem !important;
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>
